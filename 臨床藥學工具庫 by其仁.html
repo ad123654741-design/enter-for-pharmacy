@@ -276,7 +276,6 @@
             ChevronUp: (props) => (
                 <IconBase {...props}><polyline points="18 15 12 9 6 15"/></IconBase>
             ),
-            // 新增：後台管理圖示
             Settings: (props) => (
                 <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>
             ),
@@ -321,7 +320,7 @@
         const categoryMeta = {
             'favorites': { name: '我的最愛', icon: <Star size={18} /> },
             'clinical': { name: '臨床計算', icon: <Calculator size={18} /> },
-            'education': { name: '教育訓練', icon: <BookOpen size={18} /> },
+            'education': { name: '衛教工具', icon: <BookOpen size={18} /> },
             'sup': { name: '輔助管理', icon: <Activity size={18} /> },
             'information': { name: '臨床資訊', icon: <FlaskConical size={18} /> },
             'else': { name: '其他工具', icon: <Activity size={18} /> }
@@ -335,26 +334,27 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F-%E8%9D%A6%E4%BB%81%E8%97%A5%E5%B8%AB.html", 
                 tags: ["劑量", "腎功能"],
-                color: "bg-blue-100 text-blue-600",
-                isPopular: true // 設定為熱門
+                aliases: ["kidney", "egfr", "ccr"],
+                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
+                isPopular: true
             },
             {
                 id: 2,
-                title: "鴉片類止痛藥 等效劑量轉換器",
+                title: "鴉片類止痛藥物等效劑量轉換器",
                 description: "快速換算各種常見之鴉片類止痛藥物劑量。",
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%B4%89%E7%89%87%E9%A1%9E%E6%AD%A2%E7%97%9B%E8%97%A5%E7%89%A9%E7%AD%89%E6%95%88%E5%8A%91%E9%87%8F%E8%BD%89%E6%8F%9B%E5%99%A8.html",
                 tags: ["嗎啡", "劑量轉換"],
-                color: "bg-red-100 text-red-600"
+                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
             },
             {
                 id: 3,
-                title: "帕金森氏症藥物LED計算工具",
+                title: "帕金氏症藥物LED計算工具",
                 description: "此工具用於計算常用帕金森氏症藥物的 Levodopa Equivalent Dose (LED)。",
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Parkinson.html.html",
                 tags: ["帕金森氏症", "劑量轉換"],
-                color: "bg-green-100 text-green-600"
+                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
             },
             {
                 id: 4,
@@ -363,16 +363,16 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/ADR.html",
                 tags: ["ADR", "藥物不良反應"],
-                color: "bg-orange-100 text-orange-600"
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
             },
             {
                 id: 5,
                 title: "CKD預後風險 智能評估系統",
                 description: "整合eGFR與UACR數據，即時生成KDIGO腎功能分級與臨床追蹤建議。",
-                category: "sup",
+                category: "education",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/CKD%E5%88%86%E6%9C%9F.html",
                 tags: ["CKD", "腎功能"],
-                color: "bg-purple-100 text-purple-600"
+                color: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400"
             },
             {
                 id: 6,
@@ -381,8 +381,8 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%AD%B7%E7%90%86%E8%87%A8%E5%BA%8A%E8%A8%88%E7%AE%97%E5%B7%A5%E4%BD%9C%E7%AB%99.html",
                 tags: ["滴速", "輸液", "EDD", "MAP"],
-                color: "bg-teal-100 text-teal-600",
-                isPopular: true // 設定為熱門
+                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400",
+                isPopular: true
             },
             {
                 id: 7,
@@ -391,16 +391,16 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%88%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
                 tags: ["電子章", "文書處理"],
-                color: "bg-blue-100 text-blue-600"
+                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
             },
             {
                 id: 8,
-                title: "互動式圖示庫",
+                title: "互動式圖示元件庫",
                 description: "可即時預覽並調整圖示大小顏色，直接應用於網頁製作。",
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E4%BA%92%E5%8B%95%E5%BC%8F%E5%9C%96%E7%A4%BA%E5%85%83%E4%BB%B6%E5%BA%AB.html",
                 tags: ["圖示元件", "網頁製作", "程式碼"],
-                color: "bg-teal-100 text-teal-600"
+                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
             },
             {
                 id: 9,
@@ -409,7 +409,7 @@
                 category: "information",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E7%89%A9%E6%AF%94%E8%BC%83%20PDE5%E6%8A%91%E5%88%B6%E5%8A%91-%E5%A3%AF%E9%99%BD%E8%97%A5%E7%89%A9.html",
                 tags: ["威而鋼", "樂威壯", "犀利士", "ED", "性功能"],
-                color: "bg-red-100 text-red-600"
+                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
             },
             {
                 id: 10,
@@ -418,200 +418,17 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Vancomycin%20TDM.html",
                 tags: ["藥物血中濃度監測", "萬古黴素"],
-                color: "bg-orange-100 text-orange-600"
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
             },
             {
                 id: 11,
-                title: "【藥學筆記】Statin 降血脂藥",
+                title: "【藥學筆記】Statin臨床決策助手",
                 description: "依照臨床實證指引，彙整了Statin的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%8B.html",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%87.html",
                 tags: ["降血脂", "血脂治療"],
-                color: "bg-orange-100 text-orange-600",
-                isPopular: true // 設定為熱門
-            },
-             {
-                id: 12,
-                title: "【藥學筆記】事後避孕藥",
-                description: "依照臨床實證指引，彙整了事後避孕藥的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E4%BA%8B%E5%BE%8C%E9%81%BF%E5%AD%95%E8%97%A5.HTML",
-                tags: ["UPA", "LNG", "Cu-IUD", "Yuzpe"],
-                color: "bg-orange-100 text-orange-600"
-            },
-             {
-                id: 13,
-                title: "【藥學筆記】外用類固醇",
-                description: "依照臨床實證指引，彙整了外用類固醇的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%A4%96%E7%94%A8%E9%A1%9E%E5%9B%BA%E9%86%87.html",
-                tags: ["類固醇強度", "濕疹", "乾癬", "外用藥"],
-                color: "bg-teal-100 text-teal-600"
-            },
-            {
-                id: 14,
-                title: "【藥學筆記】流感抗病毒藥物",
-                description: "依照臨床實證指引，彙整了流感抗病毒藥物的相關資訊。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%B5%81%E6%84%9F%E6%8A%97%E7%97%85%E6%AF%92%E8%97%A5.html",
-                tags: ["Tamiflu", "Xofluza", "Rapiacta", "公費流感"],
-                color: "bg-green-100 text-green-600"
-            },
-            {
-                id: 15,
-                title: "【藥學筆記】台灣抗蛇毒血清",
-                description: "台灣抗蛇毒血清臨床指引，快速補充相關知識。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%8F%B0%E7%81%A3%E6%8A%97%E8%9B%87%E6%AF%92%E8%A1%80%E6%B8%85.html",
-                tags: ["毒蛇", "出血性", "神經性", "毒蛇辨識"],
-                color: "bg-red-100 text-red-600"
-            },
-             {
-                id: 16,
-                title: "【藥學筆記】居家感染症抗生素建議",
-                description: "根據臺灣居家感染症注射型經驗性抗生素建議彙整而成。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%B1%85%E5%AE%B6%E6%84%9F%E6%9F%93%E7%97%87%E6%8A%97%E7%94%9F%E7%B4%A0%E5%BB%BA%E8%AD%B0.html",
-                tags: ["在宅醫療", "UTI", "肺炎", "軟組織感染"],
-                color: "bg-teal-100 text-teal-600"
-            },
-            {
-                id: 17,
-                title: "Tailwind CSS 顏色代碼生成器",
-                description: "專為網頁設計初學者打造的互動式工具，讓您能即時預覽並生成 Tailwind CSS 的顏色、邊框與內距代碼。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Tailwind%20CSS%20%E9%A1%8F%E8%89%B2%E4%BB%A3%E7%A2%BC%E7%94%9F%E6%88%90%E5%99%A8.html",
-                tags: ["程式設計", "色彩", "網頁"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 18,
-                title: "【藥學筆記】高齡用藥整合評估",
-                description: "根據臨床之高齡用藥指引，提供完整評估與藥物整合的思路。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%AB%98%E9%BD%A1%E7%94%A8%E8%97%A5%E5%AE%89%E5%85%A8%E8%88%87%E6%95%B4%E5%90%88%E8%A9%95%E4%BC%B0.html",
-                tags: ["AGS Beers Criteria", "ICOPE", "長者"],
-                color: "bg-emerald-50 text-emerald-600"
-            },
-            {
-                id: 19,
-                title: "慢箋領藥日期計算機",
-                description: "快速計算慢箋領藥日，貼心提醒效期。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%85%A2%E7%AE%8B%E9%A0%98%E8%97%A5%E6%99%82%E9%96%93%E8%A8%88%E7%AE%97.html",
-                tags: ["連續處方箋", "慢箋效期", "慢性病"],
-                color: "bg-green-100 text-green-600"
-            },
-            {
-                id: 20,
-                title: "TOSHO藥包機教育訓練",
-                description: "整合系統設置、硬體操作、耗材更換等文件資料與影音教學內容。",
-                category: "education",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%8C%85%E6%A9%9F%E6%95%99%E5%AD%B8.html",
-                tags: ["住院藥局", "教學", "UD分包機"],
-                color: "bg-blue-100 text-blue-600"
-            },
-            {
-                id: 21,
-                title: "記憶訓練遊戲 Neuro-X Pro Ultra",
-                description: "結合順序記憶、逆向邏輯、瞬間圖形與極限反應四種模式，全方位挑戰你的大腦極限。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%A8%98%E6%86%B6%E8%A8%93%E7%B7%B4%E9%81%8A%E6%88%B2.html",
-                tags: ["認知訓練", "職能治療", "記憶力"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 22,
-                title: "兒科藥物計算機",
-                description: "根據兒童年齡或體重，快速計算常見兒科藥物之建議劑量。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%85%92%E7%A7%91%E8%97%A5%E5%93%81%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
-                tags: ["劑量", "藥水"],
-                color: "bg-blue-100 text-blue-600",
-                isPopular: true // 設定為熱門
-            },
-            {
-                id: 23,
-                title: "抗生素臨床資料庫",
-                description: "整合抗生素評估相關資料。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%8A%97%E7%94%9F%E7%B4%A0%E8%87%A8%E5%BA%8A%E8%B3%87%E6%96%99%E5%BA%AB.html", 
-                tags: ["感染", "菌種"],
-                color: "bg-blue-100 text-blue-600",
-                isPopular: true // 設定為熱門
-            },
-            {
-                id: 24,
-                title: "急救車效期提醒系統",
-                description: "以數位化方式紀錄藥品效期。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%80%A5%E6%95%91%E8%BB%8A%E6%95%88%E6%9C%9F%E6%8F%90%E9%86%92%E7%B3%BB%E7%B5%B1.html", 
-                tags: ["過期", "公藥"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 25,
-                title: "抗生素相容性資料庫",
-                description: "快速查閱針劑抗生素之間的相容性。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%8A%97%E7%94%9F%E7%B4%A0%E7%9B%B8%E5%AE%B9%E6%80%A7%E8%B3%87%E6%96%99%E5%BA%AB.html", 
-                tags: ["輸注", "溶液"],
-                color: "bg-blue-100 text-blue-600",
-                isPopular: true // 設定為熱門
-            },
-            {
-                id: 26,
-                title: "榮字病房-院外適應借藥計算機",
-                description: "快速計算借藥需包藥天數。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%A6%AE%E5%AD%97%E9%A0%AD%E5%80%9F%E8%97%A5%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
-                tags: ["過年", "榮字頭"],
-                color: "bg-blue-100 text-blue-600"
-            },
-            {
-                id: 27,
-                title: "QRcode產生器",
-                description: "快速並客製化QRcode。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/QRcode.html", 
-                tags: ["條碼", "掃描"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 28,
-                title: "各平台響應式斷點測試器",
-                description: "測試網頁在各平台實際呈現的狀況。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%90%84%E5%B9%B3%E5%8F%B0%E9%9F%BF%E6%87%89%E5%BC%8F%E6%96%B7%E9%BB%9E%E6%B8%AC%E8%A9%A6%E5%99%A8.html", 
-                tags: ["手機", "平板"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 29,
-                title: "常用字串管理員",
-                description: "分辨快速複製常用片語和字彙。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%AD%97%E4%B8%B2%E5%89%AA%E8%B2%BC%E7%B0%BF.html", 
-                tags: ["剪貼", "複製貼上"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 30,
-                title: "北榮玉里分院抗生素資料庫",
-                description: "藥劑科製作整理之臨床資料庫。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%8C%97%E6%A6%AE%E7%8E%89%E9%87%8C%E5%88%86%E9%99%A2%E6%8A%97%E7%94%9F%E7%B4%A0%E8%B3%87%E6%96%99%E5%BA%AB.html", 
-                tags: ["抗菌", "相容性"],
-                color: "bg-rose-50 text-rose-600"
-            },
-            {
-                id: 31,
-                title: "停車訓練模擬器",
-                description: "練習停車技術與學習技巧觀念。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%81%9C%E8%BB%8A%E8%A8%93%E7%B7%B4%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
-                tags: ["汽車", "三寶"],
-                color: "bg-green-100 text-green-600"
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400",
+                isNew: true 
             }
         ];
 
@@ -662,6 +479,7 @@
                     }
                 } catch (err) {
                     if (err.name === "TypeError" && err.message === "Failed to fetch") {
+                        // 預覽沙盒備用：cHd5bHZo為 pwylvh，RjEyODU1NjUzOA==為 F128556538
                         if (btoa(password) === "cHd5bHZo") {
                             onLogin(false);
                             return;
@@ -727,19 +545,22 @@
             );
         };
 
-        const Modal = ({ isOpen, onClose, title, children }) => {
+        const Modal = ({ isOpen, onClose, title, children, maxWidthClass = "max-w-lg", headerRight }) => {
             if (!isOpen) return null;
             return (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
-                    <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-[fadeIn_0.25s_ease-out] border border-white/50 dark:border-slate-700">
+                    <div className={`relative bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-2xl shadow-2xl w-full ${maxWidthClass} max-h-[90vh] overflow-y-auto animate-[fadeIn_0.25s_ease-out] border border-white/50 dark:border-slate-700`}>
                         <div className="sticky top-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur border-b border-slate-100 dark:border-slate-700 p-4 flex justify-between items-center z-10">
                             <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                 {title}
                             </h3>
-                            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
-                                <X size={20} />
-                            </button>
+                            <div className="flex items-center gap-3">
+                                {headerRight && headerRight}
+                                <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                                    <X size={20} />
+                                </button>
+                            </div>
                         </div>
                         <div className="p-6">
                             {children}
@@ -985,6 +806,8 @@
             const [pageViews, setPageViews] = useState(null);
 
             const [changelogs, setChangelogs] = useState([]);
+            const [upcomingFeatures, setUpcomingFeatures] = useState([]);
+            const [showUpcomingView, setShowUpcomingView] = useState(false); // 控制更新日誌切換畫面
             const [expandedLogIndex, setExpandedLogIndex] = useState(0); 
             const [hasNewChangelog, setHasNewChangelog] = useState(false); // 2. 新增：是否有未讀推播
 
@@ -993,6 +816,7 @@
             useEffect(() => {
                 if (showChangelog) {
                     setExpandedLogIndex(0);
+                    setShowUpcomingView(false); // 開啟時預設為更新日誌畫面
                     // 2. 當打開時，標記為已讀，並消除小紅點
                     setHasNewChangelog(false);
                     if (changelogs.length > 0) {
@@ -1067,6 +891,9 @@
                                 if (latestVersion !== readVersion) {
                                     setHasNewChangelog(true); // 如果不同，點亮小紅點
                                 }
+                            }
+                            if (data.upcomingFeatures) {
+                                setUpcomingFeatures(data.upcomingFeatures);
                             }
                         })
                         .catch(err => console.error("無法取得更新日誌", err));
@@ -1369,7 +1196,7 @@
                             </div>
                             
                             <p className="leading-relaxed">
-                                Pharmacy Tools 是一個專為藥師與醫療人員設計的臨床工具入口網站。整合了各種臨床計算、衛教生成與行政輔助工具，旨在簡化繁瑣的日常作業，讓專業人員能將更多時間投入在病人照護上。
+                                Pharmacy Tools 是一個專為藥師與醫療人員設計的臨床工具入口網站。我們整合了各種臨床計算、衛教生成與行政輔助工具，旨在簡化繁瑣的日常作業，讓專業人員能將更多時間投入在病人照護上。
                             </p>
 
                             <div className="mt-4">
@@ -1385,46 +1212,81 @@
                         </div>
                     </Modal>
 
-                    <Modal isOpen={showChangelog} onClose={() => setShowChangelog(false)} title="更新日誌">
-                        <div className="space-y-4">
-                            {changelogs.length > 0 ? changelogs.map((log, index) => (
-                                <div key={index} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 transition-all">
-                                    <button 
-                                        onClick={() => setExpandedLogIndex(expandedLogIndex === index ? -1 : index)}
-                                        className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
-                                    >
-                                        <div className="flex items-baseline gap-3">
-                                            <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100">{log.version}</h4>
-                                            <span className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
-                                                {(() => {
-                                                    const d = new Date(log.date);
-                                                    return isNaN(d.getTime()) ? log.date : `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
-                                                })()}
-                                            </span>
-                                        </div>
-                                        <div className="text-slate-400 dark:text-slate-500 transition-transform duration-300">
-                                            {expandedLogIndex === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                                        </div>
-                                    </button>
-                                    {expandedLogIndex === index && (
-                                        <div className="p-4 border-t border-slate-100 dark:border-slate-700 animate-[fadeIn_0.3s_ease-out]">
-                                            <ul className="space-y-2">
-                                                {log.features.map((feature, fIndex) => (
-                                                    <li key={fIndex} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
-                                                        <span className="text-teal-500 dark:text-teal-400 mt-0.5">•</span>
-                                                        <span>{feature}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                            )) : (
-                                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
-                                    載入中或無更新紀錄...
-                                </div>
-                            )}
-                        </div>
+                    <Modal 
+                        isOpen={showChangelog} 
+                        onClose={() => setShowChangelog(false)} 
+                        title={showUpcomingView ? "預計更新項目" : "更新日誌"}
+                        maxWidthClass="max-w-4xl"
+                        headerRight={
+                            <button
+                                onClick={() => setShowUpcomingView(!showUpcomingView)}
+                                className="px-3 py-1.5 text-sm bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-800/50 transition-colors flex items-center gap-1 font-medium border border-teal-200 dark:border-teal-800 shadow-sm"
+                            >
+                                {showUpcomingView ? <History size={16} /> : <Sparkles size={16} />}
+                                {showUpcomingView ? "返回更新日誌" : "預計更新項目"}
+                            </button>
+                        }
+                    >
+                        {showUpcomingView ? (
+                            <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
+                                {upcomingFeatures.length > 0 ? (
+                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                                        <ul className="space-y-3">
+                                            {upcomingFeatures.map((feature, index) => (
+                                                <li key={index} className="text-slate-700 dark:text-slate-300 flex items-start gap-3">
+                                                    <span className="text-amber-500 mt-0.5"><Sparkles size={18} /></span>
+                                                    <span className="leading-relaxed">{feature}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                        目前尚無預計更新項目...
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="space-y-4 animate-[fadeIn_0.3s_ease-out]">
+                                {changelogs.length > 0 ? changelogs.map((log, index) => (
+                                    <div key={index} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 transition-all">
+                                        <button 
+                                            onClick={() => setExpandedLogIndex(expandedLogIndex === index ? -1 : index)}
+                                            className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
+                                        >
+                                            <div className="flex items-baseline gap-3">
+                                                <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100">{log.version}</h4>
+                                                <span className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
+                                                    {(() => {
+                                                        const d = new Date(log.date);
+                                                        return isNaN(d.getTime()) ? log.date : `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            <div className="text-slate-400 dark:text-slate-500 transition-transform duration-300">
+                                                {expandedLogIndex === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                            </div>
+                                        </button>
+                                        {expandedLogIndex === index && (
+                                            <div className="p-4 border-t border-slate-100 dark:border-slate-700 animate-[fadeIn_0.3s_ease-out]">
+                                                <ul className="space-y-2">
+                                                    {log.features.map((feature, fIndex) => (
+                                                        <li key={fIndex} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
+                                                            <span className="text-teal-500 dark:text-teal-400 mt-0.5">•</span>
+                                                            <span>{feature}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                )) : (
+                                    <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                        載入中或無更新紀錄...
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </Modal>
 
                     <Modal isOpen={showLinks} onClose={() => setShowLinks(false)} title="外部連結">
@@ -1461,16 +1323,21 @@
                             <form onSubmit={handleFeedbackSubmit} className="space-y-5">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">回報類型</label>
-                                    <select 
-                                        value={feedbackType}
-                                        onChange={(e) => setFeedbackType(e.target.value)}
-                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
-                                    >
-                                        <option value="工具新增許願">✨ 工具新增許願</option>
-                                        <option value="功能錯誤回報">🐛 功能錯誤回報 (Bug)</option>
-                                        <option value="資料內容修正">📝 資料內容修正</option>
-                                        <option value="其他建議">💡 其他建議</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select 
+                                            value={feedbackType}
+                                            onChange={(e) => setFeedbackType(e.target.value)}
+                                            className="appearance-none w-full pl-4 pr-10 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all cursor-pointer relative z-10"
+                                        >
+                                            <option value="工具新增許願">✨ 工具新增許願</option>
+                                            <option value="功能錯誤回報">🐛 功能錯誤回報 (Bug)</option>
+                                            <option value="資料內容修正">📝 資料內容修正</option>
+                                            <option value="其他建議">💡 其他建議</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none z-20 text-slate-500">
+                                            <ChevronDown size={18} />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">內容描述</label>
