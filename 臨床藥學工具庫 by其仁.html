@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-TW" className="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Tools - 藥師專業臨床工具庫</title>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js 視覺化圖表套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Tailwind Config for Dark Mode -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    
+    <!-- Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            /* 醫療科技感的方格背景 */
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        /* 深色模式下的背景調整 */
+        .dark body {
+            background-color: #0f172a;
+            background-image: radial-gradient(#334155 1px, transparent 1px);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        .dark .glass-effect {
+            background: rgba(15, 23, 42, 0.85);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px -8px rgba(13, 148, 136, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.05);
+            border-color: #99f6e4; /* teal-200 */
+        }
+        .dark .card-hover:hover {
+            box-shadow: 0 12px 24px -8px rgba(20, 184, 166, 0.25), 0 4px 8px -4px rgba(0, 0, 0, 0.2);
+            border-color: #0d9488; /* teal-600 */
+        }
+        
+        /* 裝飾性光暈 */
+        .blob-bg {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 600px;
+            background: radial-gradient(circle at 50% 0%, rgba(45, 212, 191, 0.15) 0%, transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+        .dark .blob-bg {
+            background: radial-gradient(circle at 50% 0%, rgba(20, 184, 166, 0.1) 0%, transparent 70%);
+        }
+        
+        /* 自定義滾動條 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1e293b; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        .shake-animation {
+            animation: shake 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ==========================================
+        // API 網址設定
+        // ==========================================
+        const GOOGLE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEUKOljFfEsBr0iBJ5F-PXP2GE0xtgyTUJQk7fA2dy6RPNbSLHK3skFj6YSvXY9etwAw/exec";
+
+        // ==========================================
+        // 內建圖示元件庫
+        // ==========================================
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {children}
+            </svg>
+        );
+
+        const Icons = {
+            Search: (props) => (
+                <IconBase {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconBase>
+            ),
+            Pill: (props) => (
+                <IconBase {...props}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></IconBase>
+            ),
+            Stethoscope: (props) => (
+                <IconBase {...props}>
+                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
+                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
+                    <circle cx="20" cy="10" r="2"/>
+                </IconBase>
+            ),
+            Calculator: (props) => (
+                <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconBase>
+            ),
+            BookOpen: (props) => (
+                <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>
+            ),
+            Activity: (props) => (
+                <IconBase {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconBase>
+            ),
+            ExternalLink: (props) => (
+                <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>
+            ),
+            Github: (props) => (
+                <IconBase {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></IconBase>
+            ),
+            Menu: (props) => (
+                <IconBase {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconBase>
+            ),
+            X: (props) => (
+                <IconBase {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>
+            ),
+            FlaskConical: (props) => (
+                <IconBase {...props}><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></IconBase>
+            ),
+            HeartPulse: (props) => (
+                <IconBase {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></IconBase>
+            ),
+            User: (props) => (
+                <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>
+            ),
+            Info: (props) => (
+                <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>
+            ),
+            Book: (props) => (
+                <IconBase {...props}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></IconBase>
+            ),
+            Instagram: (props) => (
+                <IconBase {...props}>
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+                </IconBase>
+            ),
+            Globe: (props) => (
+                <IconBase {...props}>
+                    <circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                </IconBase>
+            ),
+            Link: (props) => (
+                <IconBase {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconBase>
+            ),
+            Lock: (props) => (
+                <IconBase {...props}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </IconBase>
+            ),
+            ChevronLeft: (props) => (
+                <IconBase {...props}><polyline points="15 18 9 12 15 6" /></IconBase>
+            ),
+            ChevronRight: (props) => (
+                <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>
+            ),
+            ChevronsLeft: (props) => (
+                <IconBase {...props}><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></IconBase>
+            ),
+            ChevronsRight: (props) => (
+                <IconBase {...props}><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></IconBase>
+            ),
+            ArrowUp: (props) => (
+                <IconBase {...props}><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></IconBase>
+            ),
+            Flame: (props) => (
+                <IconBase {...props}>
+                    <path d="M12 2c0 4 3 6 3 9a3 3 0 0 1-6 0c0-3 3-5 3-9z" />
+                    <path d="M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4" fill="currentColor"/>
+                    <path d="M8.5 8.5C7.5 10 7 12 7 14a5 5 0 0 0 10 0c0-2.5-1.5-4.5-3-6" />
+                </IconBase>
+            ),
+            History: (props) => (
+                <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconBase>
+            ),
+            Sparkles: (props) => (
+                <IconBase {...props}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></IconBase>
+            ),
+            Star: (props) => (
+                <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>
+            ),
+            StarFilled: (props) => (
+                <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/></IconBase>
+            ),
+            Sun: (props) => (
+                <IconBase {...props}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></IconBase>
+            ),
+            Moon: (props) => (
+                <IconBase {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconBase>
+            ),
+            MessageSquare: (props) => (
+                <IconBase {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconBase>
+            ),
+            Send: (props) => (
+                <IconBase {...props}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconBase>
+            ),
+            CheckCircle: (props) => (
+                <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>
+            ),
+            ChevronDown: (props) => (
+                <IconBase {...props}><polyline points="6 9 12 15 18 9"/></IconBase>
+            ),
+            ChevronUp: (props) => (
+                <IconBase {...props}><polyline points="18 15 12 9 6 15"/></IconBase>
+            ),
+            // 新增：後台管理圖示
+            Settings: (props) => (
+                <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>
+            ),
+            BarChart: (props) => (
+                <IconBase {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></IconBase>
+            )
+        };
+
+        const { 
+            Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart
+        } = Icons;
+
+        // ==========================================
+        // 資料設定區
+        // ==========================================
+        
+        const socialLinksData = [
+            {
+                id: 'blog',
+                title: '其仁藥師的部落格',
+                url: 'https://vocus.cc/user/@pharmacy', 
+                icon: <Link size={20} />,
+                color: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600'
+            },
+            {
+                id: 'instagram',
+                title: '其仁藥師的Instagram',
+                url: 'https://www.instagram.com/pharmacy_shrimp/', 
+                icon: <Link size={20} />,
+                color: 'bg-pink-50 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600'
+            },
+            {
+                id: 'other',
+                title: '其仁藥師的Threads',
+                url: 'https://www.threads.com/@pharmacy_shrimp?hl=zh-tw', 
+                icon: <Link size={20} />,
+                color: 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-100 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-500'
+            }
+        ];
+
+        const categoryMeta = {
+            'favorites': { name: '我的最愛', icon: <Star size={18} /> },
+            'clinical': { name: '臨床計算', icon: <Calculator size={18} /> },
+            'education': { name: '衛教工具', icon: <BookOpen size={18} /> },
+            'sup': { name: '輔助管理', icon: <Activity size={18} /> },
+            'information': { name: '臨床資訊', icon: <FlaskConical size={18} /> },
+            'else': { name: '其他工具', icon: <Activity size={18} /> }
+        };
+
+        const appsData = [
+            {
+                id: 1,
+                title: "腎功能計算機",
+                description: "根據年齡體重與腎功能相關指標，快速計算出腎功能估算值。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F-%E8%9D%A6%E4%BB%81%E8%97%A5%E5%B8%AB.html", 
+                tags: ["劑量", "腎功能"],
+                aliases: ["kidney", "egfr", "ccr"],
+                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
+                isPopular: true
+            },
+            {
+                id: 2,
+                title: "鴉片類止痛藥物等效劑量轉換器",
+                description: "快速換算各種常見之鴉片類止痛藥物劑量。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%B4%89%E7%89%87%E9%A1%9E%E6%AD%A2%E7%97%9B%E8%97%A5%E7%89%A9%E7%AD%89%E6%95%88%E5%8A%91%E9%87%8F%E8%BD%89%E6%8F%9B%E5%99%A8.html",
+                tags: ["嗎啡", "劑量轉換"],
+                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+            },
+            {
+                id: 3,
+                title: "帕金森氏症藥物LED計算工具",
+                description: "此工具用於計算常用帕金森氏症藥物的 Levodopa Equivalent Dose (LED)。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Parkinson.html.html",
+                tags: ["帕金森氏症", "劑量轉換"],
+                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+            },
+            {
+                id: 4,
+                title: "Naranjo Score ADR評估工具",
+                description: "評估藥物不良反應 (ADR) 與藥物之關聯性。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/ADR.html",
+                tags: ["ADR", "藥物不良反應"],
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
+            },
+            {
+                id: 5,
+                title: "CKD預後風險 智能評估系統",
+                description: "整合eGFR與UACR數據，即時生成KDIGO腎功能分級與臨床追蹤建議。",
+                category: "education",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/CKD%E5%88%86%E6%9C%9F.html",
+                tags: ["CKD", "腎功能"],
+                color: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400"
+            },
+            {
+                id: 6,
+                title: "護理臨床計算工作站",
+                description: "整合護理臨床常用計算工具，涵蓋流速計算、檢驗數值校正、預產期估算等功能。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%AD%B7%E7%90%86%E8%87%A8%E5%BA%8A%E8%A8%88%E7%AE%97%E5%B7%A5%E4%BD%9C%E7%AB%99.html",
+                tags: ["滴速", "輸液", "EDD", "MAP"],
+                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400",
+                isPopular: true
+            },
+            {
+                id: 7,
+                title: "印章模擬器",
+                description: "將您上傳的圖像，轉化成不同色彩深淺的印章圖檔。",
+                category: "else",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%88%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
+                tags: ["電子章", "文書處理"],
+                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
+            },
+            {
+                id: 8,
+                title: "互動式圖示元件庫",
+                description: "可即時預覽並調整圖示大小顏色，直接應用於網頁製作。",
+                category: "else",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E4%BA%92%E5%8B%95%E5%BC%8F%E5%9C%96%E7%A4%BA%E5%85%83%E4%BB%B6%E5%BA%AB.html",
+                tags: ["圖示元件", "網頁製作", "程式碼"],
+                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
+            },
+            {
+                id: 9,
+                title: "【藥學筆記】壯陽藥-PDE5抑制劑",
+                description: "整理常見的PDE5抑制劑，並提供詳細臨床資料比較。",
+                category: "information",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E7%89%A9%E6%AF%94%E8%BC%83%20PDE5%E6%8A%91%E5%88%B6%E5%8A%91-%E5%A3%AF%E9%99%BD%E8%97%A5%E7%89%A9.html",
+                tags: ["威而鋼", "樂威壯", "犀利士", "ED", "性功能"],
+                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+            },
+            {
+                id: 10,
+                title: "【TDM】Vancomycin測試版",
+                description: "依照臨床個案之生理參數，預測Vancomycin在體內的血中濃度變化。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Vancomycin%20TDM.html",
+                tags: ["藥物血中濃度監測", "萬古黴素"],
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
+            },
+            {
+                id: 11,
+                title: "【藥學筆記】Statin臨床決策助手",
+                description: "依照臨床實證指引，彙整了Statin的相關資訊，方便快速了解藥物之間的差異與注意事項。",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%87.html",
+                tags: ["降血脂", "血脂治療"],
+                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400",
+                isNew: true 
+            }
+        ];
+
+        // 插入「我的最愛」標籤
+        const uniqueCategories = ['all', 'favorites', ...new Set(appsData.map(app => app.category))];
+        const dynamicCategories = uniqueCategories.map(catId => ({
+            id: catId,
+            name: catId === 'all' ? '全部工具' : (categoryMeta[catId]?.name || catId),
+            icon: catId === 'all' ? <Pill size={18} /> : (categoryMeta[catId]?.icon || <Activity size={18} />)
+        }));
+
+        // ==========================================
+        // UI 元件
+        // ==========================================
+
+        const LoginScreen = ({ onLogin }) => {
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState("");
+            const [shake, setShake] = useState(false);
+            const [isChecking, setIsChecking] = useState(false);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!password) return;
+                
+                setIsChecking(true);
+                setError("");
+
+                try {
+                    const response = await fetch(`${GOOGLE_APP_SCRIPT_URL}?action=verify&pwd=${encodeURIComponent(password)}`, {
+                        method: 'GET'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+
+                    if (data.valid) {
+                        // 根據後端回傳判斷是否為管理員
+                        onLogin(data.isAdmin === true); 
+                    } else {
+                        setError("密碼錯誤，請重新輸入");
+                        setShake(true);
+                        setPassword("");
+                        setTimeout(() => setShake(false), 400); 
+                    }
+                } catch (err) {
+                    if (err.name === "TypeError" && err.message === "Failed to fetch") {
+                        // 預覽沙盒備用：cHd5bHZo為 pwylvh，RjEyODU1NjUzOA==為 F128556538
+                        if (btoa(password) === "cHd5bHZo") {
+                            onLogin(false);
+                            return;
+                        } else if (btoa(password) === "RjEyODU1NjUzOA==") {
+                            onLogin(true);
+                            return;
+                        }
+                    }
+
+                    setError("密碼錯誤，或目前環境無法連線至資料庫。");
+                    setShake(true);
+                    setPassword("");
+                    setTimeout(() => setShake(false), 400);
+                } finally {
+                    setIsChecking(false);
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                    <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-white/50 dark:border-slate-700 relative overflow-hidden ${shake ? 'shake-animation' : ''}`}>
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-teal-400 to-blue-500"></div>
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="bg-teal-100 dark:bg-teal-900/50 p-4 rounded-full text-teal-600 dark:text-teal-400 mb-4 shadow-inner">
+                                <Lock size={32} />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-100">請輸入6位數密碼</h2>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 text-center">
+                                本網站僅供醫事人員內部使用<br/>請輸入授權碼以繼續
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <input
+                                    type="password"
+                                    className="block w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 focus:bg-white dark:focus:bg-slate-800 text-center text-lg tracking-widest focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400 text-slate-800 dark:text-slate-100 placeholder:tracking-normal placeholder:text-base"
+                                    placeholder="輸入密碼"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if(error) setError("");
+                                    }}
+                                    autoFocus
+                                    disabled={isChecking}
+                                />
+                                {error && (
+                                    <p className="text-red-500 dark:text-red-400 text-sm text-center mt-2 flex items-center justify-center gap-1 animate-[fadeIn_0.2s]">
+                                        <X size={14} /> {error}
+                                    </p>
+                                )}
+                            </div>
+                            <button 
+                                type="submit"
+                                disabled={isChecking}
+                                className={`w-full bg-slate-800 dark:bg-teal-600 hover:bg-teal-600 dark:hover:bg-teal-500 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-200 dark:shadow-none flex items-center justify-center gap-2 ${isChecking ? 'opacity-75 cursor-not-allowed' : ''}`}
+                            >
+                                {isChecking ? '驗證中...' : '進入網站'} {!isChecking && <ExternalLink size={16} />}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
+        const Modal = ({ isOpen, onClose, title, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={onClose}></div>
+                    <div className="relative bg-white/95 dark:bg-slate-800/95 backdrop-blur rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-[fadeIn_0.25s_ease-out] border border-white/50 dark:border-slate-700">
+                        <div className="sticky top-0 bg-white/90 dark:bg-slate-800/90 backdrop-blur border-b border-slate-100 dark:border-slate-700 p-4 flex justify-between items-center z-10">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                {title}
+                            </h3>
+                            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HighlightText = ({ text, searchTerms }) => {
+            if (!searchTerms || searchTerms.length === 0 || !text) return <>{text}</>;
+            const validTerms = searchTerms.map(t => t.startsWith('#') ? t.slice(1) : t).filter(t => t.trim() !== '');
+            if (validTerms.length === 0) return <>{text}</>;
+
+            const escapedTerms = validTerms.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+            const regex = new RegExp(`(${escapedTerms.join('|')})`, 'gi');
+            
+            const parts = text.split(regex);
+            return (
+                <>
+                    {parts.map((part, i) => 
+                        regex.test(part) ? (
+                            <span key={i} className="bg-yellow-200 dark:bg-yellow-800 text-slate-900 dark:text-amber-50 px-0.5 rounded">{part}</span>
+                        ) : (
+                            <span key={i}>{part}</span>
+                        )
+                    )}
+                </>
+            );
+        };
+
+        const AppCard = ({ app, onTrackClick, isBookmarked, onToggleBookmark, searchTerms, onTagClick }) => {
+            return (
+                <div className={`group bg-white dark:bg-slate-800 rounded-2xl border p-6 card-hover flex flex-col justify-between h-full relative overflow-hidden ${app.isPopular ? 'border-orange-200 dark:border-orange-900/50 ring-1 ring-orange-100 dark:ring-orange-900/30' : 'border-slate-200 dark:border-slate-700'}`}>
+                    {/* 裝飾性背景圓 */}
+                    <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-700 dark:to-slate-800 rounded-full z-0 group-hover:scale-110 transition-transform duration-500"></div>
+                    
+                    {/* 我的最愛按鈕 */}
+                    <button 
+                        onClick={(e) => { e.preventDefault(); onToggleBookmark(app.id); }}
+                        className={`absolute top-4 right-4 z-20 p-2 rounded-full transition-colors ${isBookmarked ? 'text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30' : 'text-slate-300 dark:text-slate-600 hover:text-yellow-400 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
+                        title={isBookmarked ? "移除收藏" : "加入收藏"}
+                    >
+                        {isBookmarked ? <StarFilled size={22} /> : <Star size={22} />}
+                    </button>
+
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-start mb-4 pr-10">
+                            <div className={`p-3.5 rounded-xl ${app.color} shadow-sm`}>
+                                <Pill size={24} />
+                            </div>
+                            
+                            <div className="flex flex-wrap justify-end gap-2">
+                                {app.isPopular && (
+                                    <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md animate-pulse">
+                                        <Flame size={12} fill="currentColor" /> HOT
+                                    </span>
+                                )}
+                                {app.isNew && (
+                                    <span className="bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md animate-pulse">
+                                        <Sparkles size={12} fill="currentColor" /> NEW
+                                    </span>
+                                )}
+                                <span className="text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                    {dynamicCategories.find(c => c.id === app.category)?.name || '工具'}
+                                </span>
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
+                            <HighlightText text={app.title} searchTerms={searchTerms} />
+                        </h3>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
+                            <HighlightText text={app.description} searchTerms={searchTerms} />
+                        </p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            {app.tags.map((tag, index) => (
+                                <button 
+                                    key={index}
+                                    onClick={() => onTagClick && onTagClick(tag)}
+                                    className="text-xs font-medium bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400 transition-colors cursor-pointer"
+                                >
+                                    #{tag}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <a 
+                        href={app.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        onClick={() => onTrackClick && onTrackClick(app.id, app.title)}
+                        className="relative z-10 w-full mt-auto flex items-center justify-center gap-2 bg-slate-900 dark:bg-teal-700 hover:bg-teal-600 dark:hover:bg-teal-600 text-white py-3 rounded-xl transition-all font-medium text-sm shadow-lg shadow-slate-200 dark:shadow-none hover:shadow-teal-200 dark:hover:shadow-teal-900/50 transform active:scale-95"
+                    >
+                        開啟工具 <ExternalLink size={16} />
+                    </a>
+                </div>
+            );
+        };
+
+        // 1. 新增：後台數據儀表板 Component
+        const AdminDashboard = ({ isOpen, onClose }) => {
+            const [stats, setStats] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
+
+            useEffect(() => {
+                if (isOpen && !stats) {
+                    setLoading(true);
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_stats`)
+                        .then(res => res.json())
+                        .then(data => {
+                            setStats(data);
+                            setLoading(false);
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            setLoading(false);
+                        });
+                }
+            }, [isOpen]);
+
+            useEffect(() => {
+                if (isOpen && stats && chartRef.current) {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                    
+                    const ctx = chartRef.current.getContext('2d');
+                    
+                    const toolsData = stats.tools || [];
+                    // 根據點擊量排序，取前 10 名
+                    const sortedTools = toolsData.sort((a, b) => b.clicks - a.clicks).slice(0, 10);
+                    const labels = sortedTools.map(t => t.title);
+                    const data = sortedTools.map(t => t.clicks);
+
+                    chartInstance.current = new window.Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '工具點擊總次數',
+                                data: data,
+                                backgroundColor: 'rgba(20, 184, 166, 0.6)',
+                                borderColor: 'rgba(13, 148, 136, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                hoverBackgroundColor: 'rgba(20, 184, 166, 0.8)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { 
+                                        precision: 0,
+                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+                                    },
+                                    grid: {
+                                        color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        display: false // 隱藏底部座標文字，減少視覺混亂
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, [isOpen, stats]);
+
+            if (!isOpen) return null;
+
+            return (
+                <Modal isOpen={isOpen} onClose={onClose} title="後台管理與數據分析">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">累積網站總瀏覽量</p>
+                                <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">{stats ? stats.totalViews : '-'}</p>
+                            </div>
+                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">上線工具總數</p>
+                                <p className="text-3xl font-bold text-slate-700 dark:text-slate-300">{appsData.length}</p>
+                            </div>
+                        </div>
+                        
+                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 h-72 relative">
+                            {loading ? (
+                                <div className="absolute inset-0 flex items-center justify-center text-slate-400 animate-pulse">載入大數據中...</div>
+                            ) : (
+                                <canvas ref={chartRef}></canvas>
+                            )}
+                        </div>
+                    </div>
+                </Modal>
+            );
+        };
+
+        const ITEMS_PER_PAGE = 15;
+
+        const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(() => {
+                return sessionStorage.getItem('pharma_tools_auth') === 'true';
+            });
+            // 1. 新增管理員驗證狀態
+            const [isAdmin, setIsAdmin] = useState(() => {
+                return sessionStorage.getItem('pharma_tools_admin') === 'true';
+            });
+            
+            const [searchTerm, setSearchTerm] = useState("");
+            const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+            const [activeCategory, setActiveCategory] = useState("all");
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            
+            const [showAbout, setShowAbout] = useState(false);
+            const [showChangelog, setShowChangelog] = useState(false);
+            const [showLinks, setShowLinks] = useState(false);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [showAdminPanel, setShowAdminPanel] = useState(false); // 1. 控制後台 Modal 開關
+
+            const [feedbackType, setFeedbackType] = useState("工具新增許願");
+            const [feedbackDesc, setFeedbackDesc] = useState("");
+            const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+            const [feedbackSuccess, setFeedbackSuccess] = useState(false);
+
+            const [currentPage, setCurrentPage] = useState(1);
+            const [showBackToTop, setShowBackToTop] = useState(false);
+            const [pageViews, setPageViews] = useState(null);
+
+            const [changelogs, setChangelogs] = useState([]);
+            const [expandedLogIndex, setExpandedLogIndex] = useState(0); 
+            const [hasNewChangelog, setHasNewChangelog] = useState(false); // 2. 新增：是否有未讀推播
+
+            const searchInputRef = React.useRef(null); 
+
+            useEffect(() => {
+                if (showChangelog) {
+                    setExpandedLogIndex(0);
+                    // 2. 當打開時，標記為已讀，並消除小紅點
+                    setHasNewChangelog(false);
+                    if (changelogs.length > 0) {
+                        localStorage.setItem('pharma_tools_last_read_version', changelogs[0].version);
+                    }
+                }
+            }, [showChangelog, changelogs]);
+
+            const [bookmarks, setBookmarks] = useState(() => {
+                const saved = localStorage.getItem('pharma_tools_bookmarks');
+                return saved ? JSON.parse(saved) : [];
+            });
+
+            const [isDarkMode, setIsDarkMode] = useState(() => {
+                const saved = localStorage.getItem('pharma_tools_theme');
+                if (saved) return saved === 'dark';
+                return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            });
+
+            const searchRef = React.useRef(null);
+
+            const handleLoginSuccess = (adminFlag = false) => {
+                setIsAuthenticated(true);
+                sessionStorage.setItem('pharma_tools_auth', 'true');
+                if (adminFlag) {
+                    setIsAdmin(true);
+                    sessionStorage.setItem('pharma_tools_admin', 'true');
+                }
+            };
+
+            useEffect(() => {
+                localStorage.setItem('pharma_tools_bookmarks', JSON.stringify(bookmarks));
+            }, [bookmarks]);
+
+            const toggleBookmark = (id) => {
+                setBookmarks(prev => 
+                    prev.includes(id) ? prev.filter(bId => bId !== id) : [...prev, id]
+                );
+            };
+
+            useEffect(() => {
+                localStorage.setItem('pharma_tools_theme', isDarkMode ? 'dark' : 'light');
+                if (isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            }, [isDarkMode]);
+
+            useEffect(() => {
+                if (isAuthenticated) {
+                    const isTracked = sessionStorage.getItem('page_view_tracked');
+                    const action = isTracked ? 'get_views' : 'record_view';
+                    
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=${action}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.views !== undefined) setPageViews(data.views);
+                            if (!isTracked) sessionStorage.setItem('page_view_tracked', 'true');
+                        })
+                        .catch(err => console.error("無法取得瀏覽次數", err));
+
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_changelogs`)
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.changelogs && data.changelogs.length > 0) {
+                                setChangelogs(data.changelogs.slice(0, 5));
+                                
+                                // 2. 比對最新版本與瀏覽器 localStorage 記憶的版本
+                                const latestVersion = data.changelogs[0].version;
+                                const readVersion = localStorage.getItem('pharma_tools_last_read_version');
+                                if (latestVersion !== readVersion) {
+                                    setHasNewChangelog(true); // 如果不同，點亮小紅點
+                                }
+                            }
+                        })
+                        .catch(err => console.error("無法取得更新日誌", err));
+                }
+            }, [isAuthenticated]);
+
+            const handleTrackClick = (appId, appTitle) => {
+                const trackedKey = 'pharma_tools_tracked_clicks';
+                const trackedClicks = JSON.parse(sessionStorage.getItem(trackedKey) || '[]');
+                
+                if (!trackedClicks.includes(appId)) {
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=track_click&id=${appId}&title=${encodeURIComponent(appTitle)}`)
+                        .catch(err => console.error("點擊記錄失敗", err));
+                    
+                    trackedClicks.push(appId);
+                    sessionStorage.setItem(trackedKey, JSON.stringify(trackedClicks));
+                }
+            };
+
+            const handleFeedbackSubmit = async (e) => {
+                e.preventDefault();
+                if (!feedbackDesc.trim()) return;
+                
+                setIsSubmittingFeedback(true);
+                try {
+                    const response = await fetch(`${GOOGLE_APP_SCRIPT_URL}?action=feedback&type=${encodeURIComponent(feedbackType)}&desc=${encodeURIComponent(feedbackDesc)}`, {
+                        method: 'GET'
+                    });
+                    if (!response.ok) throw new Error("Network Error");
+                    
+                    setFeedbackSuccess(true);
+                    setTimeout(() => {
+                        setShowFeedback(false);
+                        setFeedbackSuccess(false);
+                        setFeedbackDesc("");
+                        setFeedbackType("工具新增許願");
+                    }, 2000);
+                } catch (err) {
+                    if (err.name === "TypeError" && err.message === "Failed to fetch") {
+                        setFeedbackSuccess(true);
+                        setTimeout(() => {
+                            setShowFeedback(false);
+                            setFeedbackSuccess(false);
+                            setFeedbackDesc("");
+                            setFeedbackType("工具新增許願");
+                        }, 2000);
+                    } else {
+                        alert("連線發生異常，請稍後再試。");
+                    }
+                } finally {
+                    setIsSubmittingFeedback(false);
+                }
+            };
+
+            useEffect(() => {
+                const timer = setTimeout(() => {
+                    setDebouncedSearchTerm(searchTerm);
+                }, 300);
+                return () => clearTimeout(timer);
+            }, [searchTerm]);
+
+            useEffect(() => {
+                setCurrentPage(1);
+            }, [debouncedSearchTerm, activeCategory]);
+
+            useEffect(() => {
+                if (searchRef.current && isAuthenticated) {
+                    const headerOffset = 100;
+                    const elementPosition = searchRef.current.getBoundingClientRect().top;
+                    const absoluteElementPosition = elementPosition + window.pageYOffset;
+                    
+                    if (window.scrollY > absoluteElementPosition - headerOffset) {
+                        window.scrollTo({
+                            top: absoluteElementPosition - headerOffset,
+                            behavior: "smooth"
+                        });
+                    }
+                }
+            }, [debouncedSearchTerm, activeCategory, currentPage, isAuthenticated]);
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    const isInputFocused = document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA';
+
+                    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                        e.preventDefault();
+                        searchInputRef.current?.focus();
+                    }
+                    if (e.key === '/' && !isInputFocused) {
+                        e.preventDefault();
+                        searchInputRef.current?.focus();
+                    }
+
+                    if (e.key === 'Escape') {
+                        setShowAbout(false);
+                        setShowChangelog(false);
+                        setShowLinks(false);
+                        setShowFeedback(false);
+                        setShowAdminPanel(false);
+                        if (document.activeElement === searchInputRef.current) {
+                            setSearchTerm("");
+                            searchInputRef.current.blur();
+                        }
+                    }
+                };
+
+                window.addEventListener("keydown", handleKeyDown);
+                return () => window.removeEventListener("keydown", handleKeyDown);
+            }, []);
+
+            useEffect(() => {
+                const handleScroll = () => {
+                    setShowBackToTop(window.scrollY > 400);
+                };
+                window.addEventListener("scroll", handleScroll);
+                return () => window.removeEventListener("scroll", handleScroll);
+            }, []);
+
+            if (!isAuthenticated) {
+                return (
+                    <div className="min-h-screen flex flex-col relative overflow-hidden transition-colors duration-300">
+                        <div className="blob-bg"></div>
+                        <LoginScreen onLogin={handleLoginSuccess} />
+                    </div>
+                );
+            }
+
+            const searchTerms = debouncedSearchTerm.toLowerCase().split(' ').filter(t => t.trim() !== '');
+
+            const filteredApps = appsData.filter(app => {
+                const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => {
+                    if (term.startsWith('#')) {
+                        const tagTerm = term.slice(1);
+                        return app.tags.some(tag => tag.toLowerCase().includes(tagTerm));
+                    } else {
+                        return app.title.toLowerCase().includes(term) ||
+                               app.description.toLowerCase().includes(term) ||
+                               app.tags.some(tag => tag.toLowerCase().includes(term)) ||
+                               (app.aliases && app.aliases.some(alias => alias.toLowerCase().includes(term)));
+                    }
+                });
+                
+                const matchesCategory = activeCategory === 'all' || 
+                                      (activeCategory === 'favorites' && bookmarks.includes(app.id)) || 
+                                      app.category === activeCategory;
+                
+                return matchesSearch && matchesCategory;
+            }).sort((a, b) => {
+                return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
+            });
+
+            const handleTagClick = (tag) => {
+                const tagString = `#${tag}`;
+                setSearchTerm(prev => {
+                    const terms = prev.split(' ').filter(t => t.trim() !== '');
+                    if (!terms.includes(tagString)) {
+                        return [...terms, tagString].join(' ') + ' ';
+                    }
+                    return prev;
+                });
+                searchInputRef.current?.focus();
+                window.scrollTo({
+                    top: searchRef.current.getBoundingClientRect().top + window.pageYOffset - 100,
+                    behavior: "smooth"
+                });
+            };
+
+            const totalPages = Math.ceil(filteredApps.length / ITEMS_PER_PAGE);
+            const currentApps = filteredApps.slice(
+                (currentPage - 1) * ITEMS_PER_PAGE,
+                currentPage * ITEMS_PER_PAGE
+            );
+
+            return (
+                <div className="min-h-screen flex flex-col relative overflow-x-hidden animate-[fadeIn_0.5s_ease-out] transition-colors duration-300">
+                    <div className="blob-bg"></div>
+
+                    {/* Header */}
+                    <header className="fixed w-full z-50 glass-effect">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}>
+                                    <div className="bg-teal-500 group-hover:bg-teal-600 transition-colors p-2 rounded-xl text-white shadow-lg shadow-teal-200 dark:shadow-none">
+                                        <HeartPulse size={24} />
+                                    </div>
+                                    <div>
+                                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight leading-none group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">Pharmacy Tools</h1>
+                                        <p className="text-[10px] text-teal-600 dark:text-teal-400 font-bold uppercase tracking-wider mt-0.5">Clinical & Digital</p>
+                                    </div>
+                                </div>
+
+                                {/* Desktop Nav */}
+                                <nav className="hidden md:flex items-center gap-1">
+                                    <button onClick={() => setShowAbout(true)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1"><Info size={16} />關於本站</button>
+                                    
+                                    {/* 2. 更新日誌 + 通知紅點 */}
+                                    <button onClick={() => setShowChangelog(true)} className="relative px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1">
+                                        <History size={16} />更新日誌
+                                        {hasNewChangelog && (
+                                            <span className="absolute top-1.5 right-2 flex h-2.5 w-2.5">
+                                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    
+                                    <button onClick={() => setShowLinks(true)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1"><Link size={16} />外部連結</button>
+                                    <button onClick={() => setShowFeedback(true)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1"><MessageSquare size={16} />意見回饋</button>
+                                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-2"></div>
+                                    <button 
+                                        onClick={() => setIsDarkMode(!isDarkMode)} 
+                                        className="p-2 text-slate-400 dark:text-slate-300 hover:text-amber-500 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-slate-800 rounded-lg transition-all"
+                                        title={isDarkMode ? "切換至淺色模式" : "切換至深色模式"}
+                                    >
+                                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                                    </button>
+
+                                    {/* 1. 後台管理入口 (僅管理員可見) */}
+                                    {isAdmin && (
+                                        <button 
+                                            onClick={() => setShowAdminPanel(true)} 
+                                            className="p-2 text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/30 hover:bg-teal-100 dark:hover:bg-teal-800/50 rounded-lg transition-all ml-1"
+                                            title="後台設定"
+                                        >
+                                            <Settings size={20} />
+                                        </button>
+                                    )}
+                                </nav>
+
+                                {/* Mobile Menu Button */}
+                                <div className="md:hidden flex items-center gap-2">
+                                    <button 
+                                        onClick={() => setIsDarkMode(!isDarkMode)} 
+                                        className="p-2 text-slate-400 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                                    >
+                                        {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+                                    </button>
+                                    {isAdmin && (
+                                        <button 
+                                            onClick={() => setShowAdminPanel(true)} 
+                                            className="p-2 text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg"
+                                        >
+                                            <Settings size={20} />
+                                        </button>
+                                    )}
+                                    <button 
+                                        className="p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg relative"
+                                        onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    >
+                                        {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                                        {/* Mobile Menu Notification Dot */}
+                                        {hasNewChangelog && !isMenuOpen && (
+                                            <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
+                                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white dark:border-slate-800"></span>
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Mobile Nav */}
+                        {isMenuOpen && (
+                            <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shadow-xl">
+                                <div className="px-4 pt-2 pb-4 space-y-1">
+                                    <button onClick={() => {setShowAbout(true); setIsMenuOpen(false)}} className="block w-full text-left px-4 py-3 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-2"><Info size={18} />關於本站</button>
+                                    
+                                    <button onClick={() => {setShowChangelog(true); setIsMenuOpen(false)}} className="block w-full text-left px-4 py-3 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-2 relative">
+                                        <History size={18} />更新日誌
+                                        {hasNewChangelog && (
+                                            <span className="ml-2 flex h-2 w-2">
+                                              <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-red-400 opacity-75"></span>
+                                              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                            </span>
+                                        )}
+                                    </button>
+                                    
+                                    <button onClick={() => {setShowLinks(true); setIsMenuOpen(false)}} className="block w-full text-left px-4 py-3 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-2"><Link size={18} />外部連結</button>
+                                    <button onClick={() => {setShowFeedback(true); setIsMenuOpen(false)}} className="block w-full text-left px-4 py-3 text-base font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg flex items-center gap-2"><MessageSquare size={18} />意見回饋</button>
+                                </div>
+                            </div>
+                        )}
+                    </header>
+
+                    {/* Modals */}
+                    
+                    {/* 1. Admin Dashboard Modal */}
+                    <AdminDashboard isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />
+
+                    <Modal isOpen={showAbout} onClose={() => setShowAbout(false)} title="關於本站">
+                        <div className="space-y-6 text-slate-600 dark:text-slate-300">
+                            <div className="flex items-center gap-4 p-5 bg-gradient-to-br from-teal-50 to-white dark:from-teal-900/30 dark:to-slate-800 rounded-2xl border border-teal-100 dark:border-teal-900/50 shadow-sm">
+                                <div className="bg-white dark:bg-slate-800 p-3 rounded-full shadow-md text-teal-600 dark:text-teal-400 ring-4 ring-teal-50 dark:ring-teal-900/30">
+                                    <User size={32} />
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100">製作者：其仁藥師</h4>
+                                </div>
+                            </div>
+                            
+                            <p className="leading-relaxed">
+                                Pharmacy Tools 是一個專為藥師與醫療人員設計的臨床工具入口網站。我們整合了各種臨床計算、衛教生成與行政輔助工具，旨在簡化繁瑣的日常作業，讓專業人員能將更多時間投入在病人照護上。
+                            </p>
+
+                            <div className="mt-4">
+                                <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-2 flex items-center gap-2">
+                                    <Info size={18} className="text-amber-500"/> 免責聲明
+                                </h4>
+                                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-sm space-y-2">
+                                    <p>• 本站所有工具僅供專業人員輔助參考。</p>
+                                    <p>• 工具產出結果可能存在誤差，臨床決策請務必依據專業判斷。</p>
+                                    <p>• 使用者應對工具產出結果進行最終確認。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </Modal>
+
+                    <Modal isOpen={showChangelog} onClose={() => setShowChangelog(false)} title="更新日誌">
+                        <div className="space-y-4">
+                            {changelogs.length > 0 ? changelogs.map((log, index) => (
+                                <div key={index} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-800 transition-all">
+                                    <button 
+                                        onClick={() => setExpandedLogIndex(expandedLogIndex === index ? -1 : index)}
+                                        className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-left"
+                                    >
+                                        <div className="flex items-baseline gap-3">
+                                            <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100">{log.version}</h4>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-600">
+                                                {(() => {
+                                                    const d = new Date(log.date);
+                                                    return isNaN(d.getTime()) ? log.date : `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+                                                })()}
+                                            </span>
+                                        </div>
+                                        <div className="text-slate-400 dark:text-slate-500 transition-transform duration-300">
+                                            {expandedLogIndex === index ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                        </div>
+                                    </button>
+                                    {expandedLogIndex === index && (
+                                        <div className="p-4 border-t border-slate-100 dark:border-slate-700 animate-[fadeIn_0.3s_ease-out]">
+                                            <ul className="space-y-2">
+                                                {log.features.map((feature, fIndex) => (
+                                                    <li key={fIndex} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
+                                                        <span className="text-teal-500 dark:text-teal-400 mt-0.5">•</span>
+                                                        <span>{feature}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )) : (
+                                <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                    載入中或無更新紀錄...
+                                </div>
+                            )}
+                        </div>
+                    </Modal>
+
+                    <Modal isOpen={showLinks} onClose={() => setShowLinks(false)} title="外部連結">
+                        <div className="grid gap-3">
+                            {socialLinksData.map(link => (
+                                <a 
+                                    key={link.id}
+                                    href={link.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`flex items-center gap-4 p-4 rounded-xl border transition-all hover:shadow-md ${link.color}`}
+                                >
+                                    <div className="p-2 bg-white dark:bg-slate-800 rounded-full shadow-sm">
+                                        {link.icon}
+                                    </div>
+                                    <span className="font-medium text-lg">{link.title}</span>
+                                    <ExternalLink size={16} className="ml-auto opacity-50" />
+                                </a>
+                            ))}
+                        </div>
+                        <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-6">
+                            歡迎追蹤我的社群，獲取最新藥學資訊
+                        </p>
+                    </Modal>
+
+                    <Modal isOpen={showFeedback} onClose={() => !isSubmittingFeedback && setShowFeedback(false)} title="意見回饋與許願池">
+                        {feedbackSuccess ? (
+                            <div className="flex flex-col items-center justify-center py-10 text-teal-600 dark:text-teal-400 space-y-4 animate-[fadeIn_0.5s_ease-out]">
+                                <CheckCircle size={48} />
+                                <h4 className="text-xl font-bold text-slate-800 dark:text-slate-100">送出成功！</h4>
+                                <p className="text-slate-500 dark:text-slate-400">感謝您的寶貴意見，我們會盡快處理。</p>
+                            </div>
+                        ) : (
+                            <form onSubmit={handleFeedbackSubmit} className="space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">回報類型</label>
+                                    <select 
+                                        value={feedbackType}
+                                        onChange={(e) => setFeedbackType(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all"
+                                    >
+                                        <option value="工具新增許願">✨ 工具新增許願</option>
+                                        <option value="功能錯誤回報">🐛 功能錯誤回報 (Bug)</option>
+                                        <option value="資料內容修正">📝 資料內容修正</option>
+                                        <option value="其他建議">💡 其他建議</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">內容描述</label>
+                                    <textarea 
+                                        required
+                                        rows="4"
+                                        value={feedbackDesc}
+                                        onChange={(e) => setFeedbackDesc(e.target.value)}
+                                        placeholder="請詳細描述您的需求或遇到的問題..."
+                                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all resize-none"
+                                    ></textarea>
+                                </div>
+                                <button 
+                                    type="submit"
+                                    disabled={isSubmittingFeedback || !feedbackDesc.trim()}
+                                    className={`w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-teal-200 dark:shadow-none flex items-center justify-center gap-2 ${(isSubmittingFeedback || !feedbackDesc.trim()) ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                >
+                                    {isSubmittingFeedback ? '傳送中...' : '送出回饋'} {!isSubmittingFeedback && <Send size={18} />}
+                                </button>
+                            </form>
+                        )}
+                    </Modal>
+
+                    {/* Hero Section */}
+                    <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
+                        <div className="max-w-4xl mx-auto text-center relative z-10">
+                            
+                            {/* 製作者資訊 Pill */}
+                            <div className="flex justify-center mb-8 animate-[fadeIn_0.5s_ease-out]">
+                                <div className="inline-flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur pl-2 pr-4 py-1.5 rounded-full shadow-sm border border-slate-200/60 dark:border-slate-700/60 ring-1 ring-slate-100 dark:ring-slate-800">
+                                    <div className="relative">
+                                        <span className="absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75 animate-ping"></span>
+                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-teal-500"></span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 tracking-wide">製作者：其仁藥師</span>
+                                </div>
+                            </div>
+
+                            <h2 className="text-4xl md:text-6xl font-extrabold text-slate-800 dark:text-slate-100 mb-6 leading-tight tracking-tight animate-[fadeIn_0.7s_ease-out]">
+                                結合<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 inline-block">藥學專業</span>與<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-600 dark:from-teal-400 dark:to-blue-500 inline-block">數位科技</span><br/>
+                                提升醫療照護品質
+                            </h2>
+
+                            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed animate-[fadeIn_0.9s_ease-out]">
+                                專為臨床藥師打造的專業輔助中心。<br className="hidden md:block"/>
+                                快速進行劑量計算、交互作用判讀、衛教諮詢與行政管理。
+                            </p>
+                            
+                            {/* Search Bar */}
+                            <div className="relative max-w-xl mx-auto animate-[fadeIn_1.1s_ease-out]" ref={searchRef}>
+                                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
+                                    <Search size={22} />
+                                </div>
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    className="block w-full pl-14 pr-16 py-5 rounded-2xl border-0 shadow-xl shadow-slate-200/60 dark:shadow-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-teal-500 text-lg text-slate-800 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 bg-white/90 dark:bg-slate-800/90 backdrop-blur transition-all focus:bg-white dark:focus:bg-slate-800 focus:shadow-2xl focus:shadow-teal-100/50 dark:focus:shadow-none"
+                                    placeholder="搜尋名稱、適應症，或加上 #標籤..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                                <div className="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none text-slate-300 dark:text-slate-600">
+                                    <kbd className="hidden sm:inline-block font-sans text-[10px] border border-slate-200 dark:border-slate-700 px-2 py-1 rounded-md bg-slate-50 dark:bg-slate-800/50">Ctrl K</kbd>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 flex-grow w-full z-10">
+                        
+                        <div className="flex flex-wrap justify-center gap-3 mb-12">
+                            {dynamicCategories.map(cat => (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setActiveCategory(cat.id)}
+                                    className={`
+                                        flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                                        ${activeCategory === cat.id 
+                                            ? 'bg-slate-800 dark:bg-teal-600 text-white shadow-lg shadow-slate-300 dark:shadow-none transform scale-105' 
+                                            : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:text-slate-700 dark:hover:text-slate-200 shadow-sm'}
+                                    `}
+                                >
+                                    {cat.icon}
+                                    {cat.name}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* App Grid */}
+                        {currentApps.length > 0 ? (
+                            <>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {currentApps.map(app => (
+                                        <AppCard 
+                                            key={app.id} 
+                                            app={app} 
+                                            onTrackClick={handleTrackClick}
+                                            isBookmarked={bookmarks.includes(app.id)}
+                                            onToggleBookmark={toggleBookmark}
+                                            searchTerms={searchTerms}
+                                            onTagClick={handleTagClick}
+                                        />
+                                    ))}
+                                </div>
+                                
+                                {/* Pagination Controls */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center items-center gap-2 mt-12">
+                                        <button 
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            title="第一頁"
+                                        >
+                                            <ChevronsLeft size={20} />
+                                        </button>
+                                        <button 
+                                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                            disabled={currentPage === 1}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            title="上一頁"
+                                        >
+                                            <ChevronLeft size={20} />
+                                        </button>
+                                        <span className="text-slate-600 dark:text-slate-400 font-medium px-4">
+                                            第 {currentPage} 頁 / 共 {totalPages} 頁
+                                        </span>
+                                        <button 
+                                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            title="下一頁"
+                                        >
+                                            <ChevronRight size={20} />
+                                        </button>
+                                        <button 
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            title="最末頁"
+                                        >
+                                            <ChevronsRight size={20} />
+                                        </button>
+                                    </div>
+                                )}
+                            </>
+                        ) : (
+                            <div className="text-center py-20 bg-white/50 dark:bg-slate-800/50 backdrop-blur rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+                                <div className="inline-block p-6 rounded-full bg-slate-50 dark:bg-slate-800 text-slate-300 dark:text-slate-600 mb-4">
+                                    <Search size={48} />
+                                </div>
+                                <h3 className="text-xl font-medium text-slate-900 dark:text-slate-100 mb-2">找不到相關工具</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mb-6">請嘗試使用不同的關鍵字或標籤進行搜尋。</p>
+                                <button 
+                                    onClick={() => {
+                                        setSearchTerm("");
+                                        setActiveCategory("all");
+                                    }}
+                                    className="px-6 py-2.5 bg-slate-800 dark:bg-teal-600 text-white font-medium rounded-xl hover:bg-teal-600 dark:hover:bg-teal-500 transition-colors shadow-md dark:shadow-none"
+                                >
+                                    清除搜尋條件
+                                </button>
+                            </div>
+                        )}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 pt-12 pb-8 transition-colors duration-300">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                                <div className="text-center md:text-left">
+                                    <div className="flex items-center justify-center md:justify-start gap-2 mb-2 text-slate-800 dark:text-slate-100 font-bold">
+                                        <HeartPulse size={20} className="text-teal-600 dark:text-teal-400"/>
+                                        Pharmacy Tools
+                                    </div>
+                                    <div className="flex flex-col items-center md:items-start gap-2">
+                                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                                            &copy; {new Date().getFullYear()} Created by 其仁藥師.
+                                        </p>
+                                        {/* 累積瀏覽人次顯示 */}
+                                        {pageViews !== null && (
+                                            <div className="text-xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50/80 dark:bg-teal-900/30 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-teal-100 dark:border-teal-800 shadow-sm animate-[fadeIn_0.5s_ease-out]">
+                                                <User size={14} /> 累積瀏覽人次: {pageViews}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                
+                                <p className="text-xs text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg border border-slate-100 dark:border-slate-700 text-center max-w-md">
+                                    免責聲明：本網站工具僅供專業輔助參考，計算結果與臨床建議請務必經由專業醫療人員判斷後使用。
+                                </p>
+
+                                <div className="flex gap-4">
+                                    <a href="#" className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all">
+                                        <span className="sr-only">GitHub</span>
+                                        <Github size={20} />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
+
+                    {showBackToTop && (
+                        <button
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            className="fixed bottom-8 right-8 p-3 bg-teal-600 dark:bg-teal-500 text-white rounded-full shadow-xl hover:bg-slate-800 dark:hover:bg-slate-700 transition-all transform hover:-translate-y-1 z-50 animate-[fadeIn_0.3s_ease-out]"
+                            title="回到頂端"
+                        >
+                            <ArrowUp size={24} />
+                        </button>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
