@@ -281,12 +281,15 @@
             ),
             BarChart: (props) => (
                 <IconBase {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></IconBase>
+            ),
+            Key: (props) => (
+                <IconBase {...props}><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></IconBase>
             )
         };
 
         const { 
             Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart, Key
         } = Icons;
 
         // ==========================================
@@ -321,9 +324,10 @@
             'favorites': { name: '我的最愛', icon: <Star size={18} /> },
             'clinical': { name: '臨床計算', icon: <Calculator size={18} /> },
             'education': { name: '教育訓練', icon: <BookOpen size={18} /> },
+            'else': { name: '其他工具', icon: <Activity size={18} /> },
             'sup': { name: '流程輔助', icon: <Activity size={18} /> },
             'information': { name: '醫療資訊', icon: <FlaskConical size={18} /> },
-            'else': { name: '其他工具', icon: <Activity size={18} /> }
+            'admin': { name: '進階權限', icon: <Key size={18} /> }
         };
 
         const appsData = [
@@ -473,11 +477,23 @@
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%88%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
                 tags: ["電子章", "文書處理", "簽名"],
                 color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
+            },
+            {
+                id: 17,
+                title: "後台數據匯出與管理",
+                description: "進階管理工具，用於匯出並分析全站使用數據與設定。",
+                category: "admin",
+                url: "#", 
+                tags: ["管理", "數據", "匯出"],
+                color: "bg-slate-100 text-slate-600 dark:bg-slate-900/40 dark:text-slate-400"
             }
         ];
 
-        // 插入「我的最愛」標籤
-        const uniqueCategories = ['all', 'favorites', ...new Set(appsData.map(app => app.category))];
+        // 插入「我的最愛」標籤與自訂排序
+        const availableCategories = new Set(appsData.map(app => app.category));
+        const predefinedOrder = ['all', 'favorites', 'clinical', 'education', 'else', 'sup', 'information', 'admin'];
+        const uniqueCategories = predefinedOrder.filter(cat => cat === 'all' || cat === 'favorites' || availableCategories.has(cat));
+        
         const dynamicCategories = uniqueCategories.map(catId => ({
             id: catId,
             name: catId === 'all' ? '全部工具' : (categoryMeta[catId]?.name || catId),
@@ -636,7 +652,9 @@
             );
         };
 
-        const AppCard = ({ app, onTrackClick, isBookmarked, onToggleBookmark, searchTerms, onTagClick }) => {
+        const AppCard = ({ app, onTrackClick, isBookmarked, onToggleBookmark, searchTerms, onTagClick, isAdmin }) => {
+            const isLocked = app.category === 'admin' && !isAdmin;
+
             return (
                 <div className={`group bg-white dark:bg-slate-800 rounded-2xl border p-6 card-hover flex flex-col justify-between h-full relative overflow-hidden ${app.isPopular ? 'border-orange-200 dark:border-orange-900/50 ring-1 ring-orange-100 dark:ring-orange-900/30' : 'border-slate-200 dark:border-slate-700'}`}>
                     {/* 裝飾性背景圓 */}
@@ -691,15 +709,24 @@
                             ))}
                         </div>
                     </div>
-                    <a 
-                        href={app.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        onClick={() => onTrackClick && onTrackClick(app.id, app.title)}
-                        className="relative z-10 w-full mt-auto flex items-center justify-center gap-2 bg-slate-900 dark:bg-teal-700 hover:bg-teal-600 dark:hover:bg-teal-600 text-white py-3 rounded-xl transition-all font-medium text-sm shadow-lg shadow-slate-200 dark:shadow-none hover:shadow-teal-200 dark:hover:shadow-teal-900/50 transform active:scale-95"
-                    >
-                        開啟工具 <ExternalLink size={16} />
-                    </a>
+                    {isLocked ? (
+                        <button 
+                            disabled
+                            className="relative z-10 w-full mt-auto flex items-center justify-center gap-2 bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 py-3 rounded-xl font-medium text-sm cursor-not-allowed border border-slate-300 dark:border-slate-600 transition-all"
+                        >
+                            僅限管理者使用 <Lock size={16} />
+                        </button>
+                    ) : (
+                        <a 
+                            href={app.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={() => onTrackClick && onTrackClick(app.id, app.title)}
+                            className="relative z-10 w-full mt-auto flex items-center justify-center gap-2 bg-slate-900 dark:bg-teal-700 hover:bg-teal-600 dark:hover:bg-teal-600 text-white py-3 rounded-xl transition-all font-medium text-sm shadow-lg shadow-slate-200 dark:shadow-none hover:shadow-teal-200 dark:hover:shadow-teal-900/50 transform active:scale-95"
+                        >
+                            開啟工具 <ExternalLink size={16} />
+                        </a>
+                    )}
                 </div>
             );
         };
@@ -1484,6 +1511,7 @@
                                             onToggleBookmark={toggleBookmark}
                                             searchTerms={searchTerms}
                                             onTagClick={handleTagClick}
+                                            isAdmin={isAdmin}
                                         />
                                     ))}
                                 </div>
