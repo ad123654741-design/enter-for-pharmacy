@@ -491,7 +491,7 @@
 
         // 插入「我的最愛」標籤與自訂排序
         const availableCategories = new Set(appsData.map(app => app.category));
-        const predefinedOrder = ['all', 'favorites', 'clinical', 'education', 'else', 'sup', 'information', 'admin'];
+        const predefinedOrder = ['all', 'favorites', 'clinical', 'education', 'sup', 'information', 'else', 'admin'];
         const uniqueCategories = predefinedOrder.filter(cat => cat === 'all' || cat === 'favorites' || availableCategories.has(cat));
         
         const dynamicCategories = uniqueCategories.map(catId => ({
