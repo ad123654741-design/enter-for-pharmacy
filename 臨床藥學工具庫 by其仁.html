@@ -324,9 +324,9 @@
             'favorites': { name: '我的最愛', icon: <Star size={18} /> },
             'clinical': { name: '臨床計算', icon: <Calculator size={18} /> },
             'education': { name: '教育訓練', icon: <BookOpen size={18} /> },
+            'else': { name: '其他工具', icon: <Activity size={18} /> },
             'sup': { name: '流程輔助', icon: <Activity size={18} /> },
             'information': { name: '醫療資訊', icon: <FlaskConical size={18} /> },
-            'else': { name: '其他工具', icon: <Activity size={18} /> },
             'admin': { name: '進階權限', icon: <Key size={18} /> }
         };
 
@@ -454,7 +454,7 @@
             {
                 id: 14,
                 title: "常用字串管理員",
-                description: "方便快速複製常用片語和字彙。",
+                description: "分辨快速複製常用片語和字彙。",
                 category: "admin",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%AD%97%E4%B8%B2%E5%89%AA%E8%B2%BC%E7%B0%BF.html", 
                 tags: ["剪貼", "複製貼上"],
@@ -1095,6 +1095,9 @@
             const searchTerms = debouncedSearchTerm.toLowerCase().split(' ').filter(t => t.trim() !== '');
 
             const filteredApps = appsData.filter(app => {
+                // 一般使用者在「全部工具」中不顯示進階權限工具，但切換至進階權限分類時可看見
+                if (!isAdmin && activeCategory === 'all' && app.category === 'admin') return false;
+
                 const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => {
                     if (term.startsWith('#')) {
                         const tagTerm = term.slice(1);
