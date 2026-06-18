@@ -5,18 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Tools - 藥師專業臨床工具庫</title>
     
-    <!-- React and ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 1. 鎖定 React 與 ReactDOM 版本為 18.2.0 -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 2. 鎖定 Babel 版本為 7.23.6，避免最新版本造成解析錯誤 -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 3. 鎖定 Tailwind CSS 版本 -->
+    <script src="https://cdn.tailwindcss.com?version=3.4.3"></script>
 
-    <!-- Chart.js 視覺化圖表套件 -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 4. 改用 Chart.js 的 umd 版本，專門為了 script 標籤載入設計，避免 ES Module 衝突 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js"></script>
     
     <!-- Tailwind Config for Dark Mode -->
     <script>
@@ -124,7 +124,8 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+    <!-- 5. 加上 data-type="module" 解決 AppendChild / Import 錯誤 -->
+    <script type="text/babel" data-type="module">
         const { useState, useEffect } = React;
 
         // ==========================================
@@ -474,7 +475,7 @@
                 title: "印章模擬器",
                 description: "將您上傳的圖像，轉化成不同色彩深淺的印章圖檔。",
                 category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%88%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%87%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
                 tags: ["電子章", "文書處理", "簽名"],
                 color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
             },
