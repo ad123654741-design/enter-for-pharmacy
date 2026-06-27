@@ -126,7 +126,7 @@
 
     <!-- 5. 加上 data-type="module" 解決 AppendChild / Import 錯誤 -->
     <script type="text/babel" data-type="module">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useMemo } = React;
 
         // ==========================================
         // API 網址設定
@@ -285,12 +285,21 @@
             ),
             Key: (props) => (
                 <IconBase {...props}><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></IconBase>
+            ),
+            Plus: (props) => (
+                <IconBase {...props}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconBase>
+            ),
+            Trash2: (props) => (
+                <IconBase {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconBase>
+            ),
+            Edit3: (props) => (
+                <IconBase {...props}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></IconBase>
             )
         };
 
         const { 
             Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart, Key
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart, Key, Plus, Trash2, Edit3
         } = Icons;
 
         // ==========================================
@@ -331,7 +340,22 @@
             'admin': { name: '進階權限', icon: <Key size={18} /> }
         };
 
-        const appsData = [
+        // 色彩設定表 (提供給後台編輯時使用)
+        const colorThemes = [
+            { id: 'blue', name: '藍色', class: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400" },
+            { id: 'red', name: '紅色', class: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" },
+            { id: 'green', name: '綠色', class: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400" },
+            { id: 'orange', name: '橘色', class: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400" },
+            { id: 'purple', name: '紫色', class: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400" },
+            { id: 'teal', name: '藍綠色', class: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400" },
+            { id: 'rose', name: '玫瑰色', class: "bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400" },
+            { id: 'slate', name: '灰藍色', class: "bg-slate-100 text-slate-600 dark:bg-slate-900/40 dark:text-slate-400" },
+            { id: 'indigo', name: '靛藍色', class: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400" },
+            { id: 'yellow', name: '黃色', class: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400" }
+        ];
+
+        // 預設卡片資料 (當瀏覽器無暫存時載入此份預設)
+        const initialAppsData = [
             {
                 id: 1,
                 title: "腎功能計算機",
@@ -340,8 +364,8 @@
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
                 tags: ["劑量", "腎功能"],
                 aliases: ["kidney", "egfr", "ccr"],
-                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
-                isPopular: true // 設定為熱門
+                color: colorThemes.find(c => c.id === 'blue').class,
+                isPopular: true
             },
             {
                 id: 2,
@@ -350,7 +374,7 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%B4%89%E7%89%87%E9%A1%9E%E6%AD%A2%E7%97%9B%E8%97%A5%E7%89%A9%E7%AD%89%E6%95%88%E5%8A%91%E9%87%8F%E8%BD%89%E6%8F%9B%E5%99%A8.html",
                 tags: ["嗎啡", "劑量轉換"],
-                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+                color: colorThemes.find(c => c.id === 'red').class
             },
             {
                 id: 3,
@@ -359,7 +383,7 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Parkinson.html.html",
                 tags: ["帕金森氏症", "劑量轉換"],
-                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                color: colorThemes.find(c => c.id === 'green').class
             },
             {
                 id: 4,
@@ -368,7 +392,7 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Vancomycin%20TDM.html",
                 tags: ["藥物血中濃度監測", "萬古黴素"],
-                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
+                color: colorThemes.find(c => c.id === 'orange').class
             },
             {
                 id: 5,
@@ -377,7 +401,7 @@
                 category: "information",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%A4%96%E7%94%A8%E9%A1%9E%E5%9B%BA%E9%86%87.html",
                 tags: ["類固醇強度", "濕疹", "乾癬", "外用藥"],
-                color: "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400"
+                color: colorThemes.find(c => c.id === 'purple').class
             },
             {
                 id: 6,
@@ -386,7 +410,7 @@
                 category: "information",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%B5%81%E6%84%9F%E6%8A%97%E7%97%85%E6%AF%92%E8%97%A5.html",
                 tags: ["Tamiflu", "Xofluza", "Rapiacta", "公費流感"],
-                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                color: colorThemes.find(c => c.id === 'green').class
             },
             {
                 id: 7,
@@ -395,7 +419,7 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Tailwind%20CSS%20%E9%A1%8F%E8%89%B2%E4%BB%A3%E7%A2%BC%E7%94%9F%E6%88%90%E5%99%A8.html",
                 tags: ["程式設計", "色彩", "網頁"],
-                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
+                color: colorThemes.find(c => c.id === 'teal').class
             },
             {
                 id: 8,
@@ -404,7 +428,7 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%85%A2%E7%AE%8B%E9%A0%98%E8%97%A5%E6%99%82%E9%96%93%E8%A8%88%E7%AE%97.html",
                 tags: ["連續處方箋", "慢箋效期", "慢性病"],
-                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                color: colorThemes.find(c => c.id === 'green').class
             },
             {
                 id: 9,
@@ -413,7 +437,7 @@
                 category: "education",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%8C%85%E6%A9%9F%E6%95%99%E5%AD%B8.html",
                 tags: ["住院藥局", "教學", "UD分包機"],
-                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+                color: colorThemes.find(c => c.id === 'red').class
             },
             {
                 id: 10,
@@ -422,7 +446,7 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%80%A5%E6%95%91%E8%BB%8A%E6%95%88%E6%9C%9F%E6%8F%90%E9%86%92%E7%B3%BB%E7%B5%B1.html", 
                 tags: ["過期", "公藥"],
-                color: "bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
+                color: colorThemes.find(c => c.id === 'rose').class
             },
             {
                 id: 11,
@@ -431,8 +455,8 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%A6%AE%E5%AD%97%E9%A0%AD%E5%80%9F%E8%97%A5%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
                 tags: ["過年", "榮字頭", "請假", "連假"],
-                color: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400",
-                isNew: true // 設定為熱門
+                color: colorThemes.find(c => c.id === 'blue').class,
+                isNew: true
             },
             {
                 id: 12,
@@ -441,7 +465,7 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/QRcode.html", 
                 tags: ["條碼", "掃描"],
-                color: "bg-rose-50 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
+                color: colorThemes.find(c => c.id === 'rose').class
             },
             {
                 id: 13,
@@ -450,7 +474,7 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%90%84%E5%B9%B3%E5%8F%B0%E9%9F%BF%E6%87%89%E5%BC%8F%E6%96%B7%E9%BB%9E%E6%B8%AC%E8%A9%A6%E5%99%A8.html", 
                 tags: ["手機", "平板"],
-                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                color: colorThemes.find(c => c.id === 'green').class
             },
             {
                 id: 14,
@@ -459,7 +483,7 @@
                 category: "admin",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%AD%97%E4%B8%B2%E5%89%AA%E8%B2%BC%E7%B0%BF.html", 
                 tags: ["剪貼", "複製貼上"],
-                color: "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
+                color: colorThemes.find(c => c.id === 'orange').class
             },
             {
                 id: 15,
@@ -468,7 +492,7 @@
                 category: "information",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%8C%97%E6%A6%AE%E7%8E%89%E9%87%8C%E5%88%86%E9%99%A2%E6%8A%97%E7%94%9F%E7%B4%A0%E8%B3%87%E6%96%99%E5%BA%AB.html", 
                 tags: ["抗菌", "相容性"],
-                color: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400"
+                color: colorThemes.find(c => c.id === 'red').class
             },
             {
                 id: 16,
@@ -477,16 +501,7 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%87%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
                 tags: ["電子章", "文書處理", "簽名"],
-                color: "bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-400"
-            },
-            {
-                id: 17,
-                title: "後台數據匯出與管理",
-                description: "進階管理工具，用於匯出並分析全站瀏覽數與設定。",
-                category: "admin",
-                url: "#", 
-                tags: ["管理", "數據", "匯出"],
-                color: "bg-slate-100 text-slate-600 dark:bg-slate-900/40 dark:text-slate-400"
+                color: colorThemes.find(c => c.id === 'teal').class
             },
             {
                 id: 18,
@@ -495,7 +510,7 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E7%94%A8%E8%97%A5%E6%8C%87%E7%A4%BA%E5%A4%9A%E8%AA%9E%E7%BF%BB%E8%AD%AF%E6%A9%9F.html",
                 tags: ["泰語", "越南語", "衛教", "發藥"],
-                color: "bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400"
+                color: colorThemes.find(c => c.id === 'green').class
             },
             {
                 id: 19,
@@ -504,7 +519,7 @@
                 category: "admin",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%98%B2%E7%81%BD%E5%8C%85%E7%AE%A1%E7%90%86%E7%B3%BB%E7%B5%B1.html",
                 tags: ["天災", "效期提醒", "清單", "災難", "防災士"],
-                color: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400"
+                color: colorThemes.find(c => c.id === 'indigo').class
             },
             {
                 id: 20,
@@ -513,7 +528,7 @@
                 category: "else",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%9C%96%E7%89%87%E8%BD%89ico%E5%B7%A5%E5%85%B7.html",
                 tags: ["PNG", "縮圖", "捷徑", "圖示"],
-                color: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400"
+                color: colorThemes.find(c => c.id === 'yellow').class
             },
             {
                 id: 21,
@@ -522,7 +537,7 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%87%AA%E5%82%99%E8%97%A5%E8%BE%A8%E8%AD%98%E8%BC%94%E5%8A%A9%E7%B3%BB%E7%B5%B1.HTML",
                 tags: ["雲端藥歷", "術前評估", "藥物辨識", "裸錠"],
-                color: "bg-slate-100 text-slate-600 dark:bg-slate-900/40 dark:text-slate-400"
+                color: colorThemes.find(c => c.id === 'slate').class
             },
             {
                 id: 22,
@@ -531,20 +546,10 @@
                 category: "sup",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%93%81%E5%BA%AB%E5%AD%98%E5%8D%80%E8%A6%96%E8%A6%BA%E5%8C%96%E5%9C%B0%E5%9C%96.html",
                 tags: [ "藥庫", "藥物管理", "找藥"],
-                color: "bg-slate-100 text-slate-600 dark:bg-slate-900/40 dark:text-slate-400"
+                color: colorThemes.find(c => c.id === 'slate').class
             }
         ];
 
-        // 插入「我的最愛」標籤與自訂排序
-        const availableCategories = new Set(appsData.map(app => app.category));
-        const predefinedOrder = ['all', 'favorites', 'clinical', 'education', 'sup', 'information', 'else', 'admin'];
-        const uniqueCategories = predefinedOrder.filter(cat => cat === 'all' || cat === 'favorites' || availableCategories.has(cat));
-        
-        const dynamicCategories = uniqueCategories.map(catId => ({
-            id: catId,
-            name: catId === 'all' ? '全部工具' : (categoryMeta[catId]?.name || catId),
-            icon: catId === 'all' ? <Pill size={18} /> : (categoryMeta[catId]?.icon || <Activity size={18} />)
-        }));
 
         // ==========================================
         // UI 元件
@@ -575,7 +580,6 @@
                     const data = await response.json();
 
                     if (data.valid) {
-                        // 根據後端回傳判斷是否為管理員
                         onLogin(data.isAdmin === true); 
                     } else {
                         setError("密碼錯誤，請重新輸入");
@@ -585,7 +589,6 @@
                     }
                 } catch (err) {
                     if (err.name === "TypeError" && err.message === "Failed to fetch") {
-                        // 預覽沙盒備用：cHd5bHZo為 pwylvh，RjEyODU1NjUzOA==為 F128556538
                         if (btoa(password) === "cHd5bHZo") {
                             onLogin(false);
                             return;
@@ -733,7 +736,7 @@
                                     </span>
                                 )}
                                 <span className="text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 px-2.5 py-1 rounded-full whitespace-nowrap">
-                                    {dynamicCategories.find(c => c.id === app.category)?.name || '工具'}
+                                    {categoryMeta[app.category]?.name || '工具'}
                                 </span>
                             </div>
                         </div>
@@ -744,7 +747,7 @@
                             <HighlightText text={app.description} searchTerms={searchTerms} />
                         </p>
                         <div className="flex flex-wrap gap-2 mb-6">
-                            {app.tags.map((tag, index) => (
+                            {app.tags && app.tags.map((tag, index) => (
                                 <button 
                                     key={index}
                                     onClick={() => onTagClick && onTagClick(tag)}
@@ -777,15 +780,21 @@
             );
         };
 
-        // 1. 新增：後台數據儀表板 Component
-        const AdminDashboard = ({ isOpen, onClose }) => {
+        // 後台管理儀表板 (已加入新增、編輯工具功能)
+        const AdminDashboard = ({ isOpen, onClose, appList, setAppList }) => {
+            const [activeTab, setActiveTab] = useState('manage'); // 'manage' | 'stats'
             const [stats, setStats] = useState(null);
             const [loading, setLoading] = useState(false);
+            const [isSavingData, setIsSavingData] = useState(false); // 新增：後端儲存狀態
             const chartRef = React.useRef(null);
             const chartInstance = React.useRef(null);
 
+            // 工具管理狀態
+            const [editingApp, setEditingApp] = useState(null); // 'new' | app object id
+            const [formData, setFormData] = useState({});
+
             useEffect(() => {
-                if (isOpen && !stats) {
+                if (isOpen && activeTab === 'stats' && !stats) {
                     setLoading(true);
                     fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_stats`)
                         .then(res => res.json())
@@ -798,95 +807,240 @@
                             setLoading(false);
                         });
                 }
-            }, [isOpen]);
+            }, [isOpen, activeTab, stats]);
 
-            useEffect(() => {
-                if (isOpen && stats && chartRef.current) {
-                    if (chartInstance.current) {
-                        chartInstance.current.destroy();
-                    }
-                    
-                    const ctx = chartRef.current.getContext('2d');
-                    
-                    const toolsData = stats.tools || [];
-                    // 根據點擊量排序，取前 10 名
-                    const sortedTools = toolsData.sort((a, b) => b.clicks - a.clicks).slice(0, 10);
-                    const labels = sortedTools.map(t => t.title);
-                    const data = sortedTools.map(t => t.clicks);
-
-                    chartInstance.current = new window.Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: '工具點擊總次數',
-                                data: data,
-                                backgroundColor: 'rgba(20, 184, 166, 0.6)',
-                                borderColor: 'rgba(13, 148, 136, 1)',
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                hoverBackgroundColor: 'rgba(20, 184, 166, 0.8)'
-                            }]
+            // 新增：與後端同步資料的函數
+            const syncToBackend = async (newList, successMessage) => {
+                setIsSavingData(true);
+                try {
+                    const response = await fetch(GOOGLE_APP_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
-                                    }
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    ticks: { 
-                                        precision: 0,
-                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
-                                    },
-                                    grid: {
-                                        color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
-                                    }
-                                },
-                                x: {
-                                    ticks: {
-                                        display: false // 隱藏底部座標文字，減少視覺混亂
-                                    },
-                                    grid: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        }
+                        body: JSON.stringify({
+                            action: 'save_apps',
+                            apps: newList
+                        })
                     });
+                    
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        setAppList(newList);
+                        if (successMessage) alert(successMessage);
+                    } else {
+                        throw new Error(result.message || 'Server returned error');
+                    }
+                } catch (error) {
+                    console.error('儲存失敗', error);
+                    alert('同步至資料庫失敗，請確認網路與權限。');
+                } finally {
+                    setIsSavingData(false);
                 }
-            }, [isOpen, stats]);
+            };
+
+            // 表單操作處理
+            const handleEdit = (app) => {
+                setFormData({
+                    ...app,
+                    tagsStr: app.tags ? app.tags.join(', ') : '',
+                    aliasesStr: app.aliases ? app.aliases.join(', ') : '',
+                    colorId: colorThemes.find(c => c.class === app.color)?.id || 'blue'
+                });
+                setEditingApp(app.id);
+            };
+
+            const handleNew = () => {
+                setFormData({
+                    title: '', description: '', url: '', category: 'clinical',
+                    tagsStr: '', aliasesStr: '', colorId: 'blue', isPopular: false, isNew: true
+                });
+                setEditingApp('new');
+            };
+
+            const handleSave = (e) => {
+                e.preventDefault();
+                const newApp = {
+                    id: editingApp === 'new' ? Date.now() : editingApp,
+                    title: formData.title,
+                    description: formData.description,
+                    url: formData.url,
+                    category: formData.category,
+                    color: colorThemes.find(c => c.id === formData.colorId)?.class || colorThemes[0].class,
+                    tags: formData.tagsStr.split(',').map(t => t.trim()).filter(t => t),
+                    aliases: formData.aliasesStr.split(',').map(t => t.trim()).filter(t => t),
+                    isPopular: formData.isPopular,
+                    isNew: formData.isNew
+                };
+
+                let updatedList;
+                if (editingApp === 'new') {
+                    updatedList = [newApp, ...appList];
+                } else {
+                    updatedList = appList.map(a => a.id === editingApp ? newApp : a);
+                }
+                
+                syncToBackend(updatedList, '卡片設定已成功儲存至雲端資料庫！');
+                setEditingApp(null);
+            };
+
+            const handleDelete = (id) => {
+                if (window.confirm('確定要刪除這個工具嗎？')) {
+                    const updatedList = appList.filter(a => a.id !== id);
+                    syncToBackend(updatedList, '卡片已成功刪除！');
+                }
+            };
 
             if (!isOpen) return null;
 
             return (
-                <Modal isOpen={isOpen} onClose={onClose} title="後台管理與數據分析">
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">累積網站總瀏覽量</p>
-                                <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">{stats ? stats.totalViews : '-'}</p>
-                            </div>
-                            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
-                                <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">上線工具總數</p>
-                                <p className="text-3xl font-bold text-slate-700 dark:text-slate-300">{appsData.length}</p>
-                            </div>
-                        </div>
-                        
-                        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 h-72 relative">
-                            {loading ? (
-                                <div className="absolute inset-0 flex items-center justify-center text-slate-400 animate-pulse">載入大數據中...</div>
+                <Modal isOpen={isOpen} onClose={onClose} title="後台管理面板" maxWidthClass="max-w-4xl">
+                    {/* Tab 切換 */}
+                    <div className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700">
+                        <button 
+                            onClick={() => setActiveTab('manage')} 
+                            className={`px-4 py-2 border-b-2 font-medium transition-colors flex items-center gap-2 ${activeTab === 'manage' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                        >
+                            <Settings size={18}/> 工具管理
+                        </button>
+                        <button 
+                            onClick={() => setActiveTab('stats')} 
+                            className={`px-4 py-2 border-b-2 font-medium transition-colors flex items-center gap-2 ${activeTab === 'stats' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                        >
+                            <BarChart size={18}/> 數據分析
+                        </button>
+                    </div>
+
+                    {activeTab === 'manage' && (
+                        <div>
+                            {editingApp === null ? (
+                                /* 工具列表介面 */
+                                <div className="animate-[fadeIn_0.3s_ease-out]">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <p className="text-slate-500 dark:text-slate-400 text-sm">目前共有 {appList.length} 個工具，修改後將即時反映於前端。</p>
+                                        <button onClick={handleNew} className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-colors">
+                                            <Plus size={16}/> 新增工具
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
+                                        {appList.map(app => (
+                                            <div key={app.id} className="flex justify-between items-center p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                                                <div>
+                                                    <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                                        {app.title} 
+                                                        {app.isPopular && <span className="bg-orange-100 text-orange-600 dark:bg-orange-900/50 dark:text-orange-400 text-[10px] px-2 py-0.5 rounded">HOT</span>}
+                                                    </div>
+                                                    <div className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                                        <span className="font-medium mr-2">{categoryMeta[app.category]?.name}</span>
+                                                        {app.tags && app.tags.join(', ')}
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => handleEdit(app)} className="p-2 text-slate-500 hover:text-blue-500 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600 transition-colors" title="編輯">
+                                                        <Edit3 size={18}/>
+                                                    </button>
+                                                    <button onClick={() => handleDelete(app.id)} className="p-2 text-slate-500 hover:text-red-500 bg-white dark:bg-slate-700 rounded-lg shadow-sm border border-slate-200 dark:border-slate-600 transition-colors" title="刪除">
+                                                        <Trash2 size={18}/>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             ) : (
-                                <canvas ref={chartRef}></canvas>
+                                /* 工具編輯/新增表單 */
+                                <form onSubmit={handleSave} className="animate-[fadeIn_0.3s_ease-out] bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
+                                    <div className="flex justify-between items-center mb-6 border-b pb-4 dark:border-slate-700">
+                                        <h4 className="font-bold text-xl text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                            {editingApp === 'new' ? <><Plus size={20} className="text-teal-500"/> 新增工具卡片</> : <><Edit3 size={20} className="text-blue-500"/> 編輯工具卡片</>}
+                                        </h4>
+                                        <button type="button" onClick={() => setEditingApp(null)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                                            <X size={20}/>
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">標題 Title *</label>
+                                            <input required value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">所屬分類 Category *</label>
+                                            <select required value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none">
+                                                {Object.entries(categoryMeta)
+                                                    .filter(([k, v]) => k !== 'favorites' && k !== 'all')
+                                                    .map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">描述 Description *</label>
+                                            <textarea required rows="2" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none resize-none"></textarea>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">目標網址 URL *</label>
+                                            <input required type="url" value={formData.url} onChange={e => setFormData({...formData, url: e.target.value})} placeholder="https://" className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">標籤 Tags (請以逗號分隔)</label>
+                                            <input value={formData.tagsStr} onChange={e => setFormData({...formData, tagsStr: e.target.value})} placeholder="例如: 劑量, 腎功能" className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none" />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">圖示與外觀顏色</label>
+                                            <select value={formData.colorId} onChange={e => setFormData({...formData, colorId: e.target.value})} className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none">
+                                                {colorThemes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium mb-1 text-slate-700 dark:text-slate-300">搜尋別名 Aliases (逗號分隔)</label>
+                                            <input value={formData.aliasesStr} onChange={e => setFormData({...formData, aliasesStr: e.target.value})} placeholder="隱藏的搜尋關鍵字，例如: egfr" className="w-full px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none" />
+                                        </div>
+                                        <div className="flex items-center gap-6 mt-4">
+                                            <label className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                                                <input type="checkbox" checked={formData.isPopular} onChange={e => setFormData({...formData, isPopular: e.target.checked})} className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500" />
+                                                標註為熱門 (HOT)
+                                            </label>
+                                            <label className="flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300 cursor-pointer">
+                                                <input type="checkbox" checked={formData.isNew} onChange={e => setFormData({...formData, isNew: e.target.checked})} className="w-4 h-4 rounded text-teal-600 focus:ring-teal-500" />
+                                                標註為最新 (NEW)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex justify-end gap-3 mt-8 pt-4 border-t dark:border-slate-700">
+                                        <button type="button" onClick={() => setEditingApp(null)} disabled={isSavingData} className="px-5 py-2.5 border border-slate-300 text-slate-700 rounded-lg dark:border-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors font-medium disabled:opacity-50">取消</button>
+                                        <button type="submit" disabled={isSavingData} className="px-5 py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium shadow-sm flex items-center gap-2 disabled:opacity-50">
+                                            {isSavingData ? <Activity size={18} className="animate-spin" /> : <CheckCircle size={18}/>} 
+                                            {isSavingData ? '同步儲存中...' : '儲存卡片設定'}
+                                        </button>
+                                    </div>
+                                </form>
                             )}
                         </div>
-                    </div>
+                    )}
+
+                    {activeTab === 'stats' && (
+                        <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">累積網站總瀏覽量</p>
+                                    <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">{stats ? stats.totalViews : '-'}</p>
+                                </div>
+                                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 text-center">
+                                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">上線工具總數</p>
+                                    <p className="text-3xl font-bold text-slate-700 dark:text-slate-300">{appList.length}</p>
+                                </div>
+                            </div>
+                            
+                            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 h-72 relative">
+                                {loading ? (
+                                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 animate-pulse">載入大數據中...</div>
+                                ) : (
+                                    <canvas ref={chartRef}></canvas>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </Modal>
             );
         };
@@ -897,11 +1051,54 @@
             const [isAuthenticated, setIsAuthenticated] = useState(() => {
                 return sessionStorage.getItem('pharma_tools_auth') === 'true';
             });
-            // 1. 新增管理員驗證狀態
             const [isAdmin, setIsAdmin] = useState(() => {
                 return sessionStorage.getItem('pharma_tools_admin') === 'true';
             });
             
+            // ==========================================
+            // 工具清單與資料庫串接區 (雲端同步)
+            // ==========================================
+            const [appList, setAppList] = useState(() => {
+                const saved = localStorage.getItem('pharma_tools_apps');
+                return saved ? JSON.parse(saved) : initialAppsData;
+            });
+            const [isAppsLoading, setIsAppsLoading] = useState(false); // 新增載入狀態
+
+            // 當授權成功時，從後端資料庫取得最新卡片資料
+            useEffect(() => {
+                if (isAuthenticated) {
+                    setIsAppsLoading(true);
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_apps`)
+                        .then(res => res.json())
+                        .then(data => {
+                            // 若後端有資料，且不為空，則覆蓋前端資料
+                            if (data.status === 'success' && data.apps && data.apps.length > 0) {
+                                setAppList(data.apps);
+                                localStorage.setItem('pharma_tools_apps', JSON.stringify(data.apps));
+                            }
+                        })
+                        .catch(err => console.error("無法從資料庫取得工具清單", err))
+                        .finally(() => setIsAppsLoading(false));
+                }
+            }, [isAuthenticated]);
+
+            useEffect(() => {
+                localStorage.setItem('pharma_tools_apps', JSON.stringify(appList));
+            }, [appList]);
+
+            // 動態計算可用分類
+            const availableCategories = useMemo(() => new Set(appList.map(app => app.category)), [appList]);
+            const dynamicCategories = useMemo(() => {
+                const predefinedOrder = ['all', 'favorites', 'clinical', 'education', 'sup', 'information', 'else', 'admin'];
+                const uniqueCategories = predefinedOrder.filter(cat => cat === 'all' || cat === 'favorites' || availableCategories.has(cat));
+                
+                return uniqueCategories.map(catId => ({
+                    id: catId,
+                    name: catId === 'all' ? '全部工具' : (categoryMeta[catId]?.name || catId),
+                    icon: catId === 'all' ? <Pill size={18} /> : (categoryMeta[catId]?.icon || <Activity size={18} />)
+                }));
+            }, [availableCategories]);
+
             const [searchTerm, setSearchTerm] = useState("");
             const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
             const [activeCategory, setActiveCategory] = useState("all");
@@ -911,7 +1108,7 @@
             const [showChangelog, setShowChangelog] = useState(false);
             const [showLinks, setShowLinks] = useState(false);
             const [showFeedback, setShowFeedback] = useState(false);
-            const [showAdminPanel, setShowAdminPanel] = useState(false); // 1. 控制後台 Modal 開關
+            const [showAdminPanel, setShowAdminPanel] = useState(false);
 
             const [feedbackType, setFeedbackType] = useState("工具新增許願");
             const [feedbackDesc, setFeedbackDesc] = useState("");
@@ -924,17 +1121,16 @@
 
             const [changelogs, setChangelogs] = useState([]);
             const [upcomingFeatures, setUpcomingFeatures] = useState([]);
-            const [showUpcomingView, setShowUpcomingView] = useState(false); // 控制更新日誌切換畫面
+            const [showUpcomingView, setShowUpcomingView] = useState(false);
             const [expandedLogIndex, setExpandedLogIndex] = useState(0); 
-            const [hasNewChangelog, setHasNewChangelog] = useState(false); // 2. 新增：是否有未讀推播
+            const [hasNewChangelog, setHasNewChangelog] = useState(false); 
 
             const searchInputRef = React.useRef(null); 
 
             useEffect(() => {
                 if (showChangelog) {
                     setExpandedLogIndex(0);
-                    setShowUpcomingView(false); // 開啟時預設為更新日誌畫面
-                    // 2. 當打開時，標記為已讀，並消除小紅點
+                    setShowUpcomingView(false); 
                     setHasNewChangelog(false);
                     if (changelogs.length > 0) {
                         localStorage.setItem('pharma_tools_last_read_version', changelogs[0].version);
@@ -1002,11 +1198,10 @@
                             if (data.changelogs && data.changelogs.length > 0) {
                                 setChangelogs(data.changelogs.slice(0, 5));
                                 
-                                // 2. 比對最新版本與瀏覽器 localStorage 記憶的版本
                                 const latestVersion = data.changelogs[0].version;
                                 const readVersion = localStorage.getItem('pharma_tools_last_read_version');
                                 if (latestVersion !== readVersion) {
-                                    setHasNewChangelog(true); // 如果不同，點亮小紅點
+                                    setHasNewChangelog(true); 
                                 }
                             }
                             if (data.upcomingFeatures) {
@@ -1140,18 +1335,18 @@
 
             const searchTerms = debouncedSearchTerm.toLowerCase().split(' ').filter(t => t.trim() !== '');
 
-            const filteredApps = appsData.filter(app => {
+            const filteredApps = appList.filter(app => {
                 // 一般使用者在「全部工具」中不顯示進階權限工具，但切換至進階權限分類時可看見
                 if (!isAdmin && activeCategory === 'all' && app.category === 'admin') return false;
 
                 const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => {
                     if (term.startsWith('#')) {
                         const tagTerm = term.slice(1);
-                        return app.tags.some(tag => tag.toLowerCase().includes(tagTerm));
+                        return app.tags && app.tags.some(tag => tag.toLowerCase().includes(tagTerm));
                     } else {
                         return app.title.toLowerCase().includes(term) ||
                                app.description.toLowerCase().includes(term) ||
-                               app.tags.some(tag => tag.toLowerCase().includes(term)) ||
+                               (app.tags && app.tags.some(tag => tag.toLowerCase().includes(term))) ||
                                (app.aliases && app.aliases.some(alias => alias.toLowerCase().includes(term)));
                     }
                 });
@@ -1209,7 +1404,6 @@
                                 <nav className="hidden md:flex items-center gap-1">
                                     <button onClick={() => setShowAbout(true)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1"><Info size={16} />關於本站</button>
                                     
-                                    {/* 2. 更新日誌 + 通知紅點 */}
                                     <button onClick={() => setShowChangelog(true)} className="relative px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-teal-700 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-slate-800 rounded-lg transition-all flex items-center gap-1">
                                         <History size={16} />更新日誌
                                         {hasNewChangelog && (
@@ -1231,7 +1425,6 @@
                                         {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
                                     </button>
 
-                                    {/* 1. 後台管理入口 (僅管理員可見) */}
                                     {isAdmin && (
                                         <button 
                                             onClick={() => setShowAdminPanel(true)} 
@@ -1264,7 +1457,6 @@
                                         onClick={() => setIsMenuOpen(!isMenuOpen)}
                                     >
                                         {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                                        {/* Mobile Menu Notification Dot */}
                                         {hasNewChangelog && !isMenuOpen && (
                                             <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
                                               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -1301,8 +1493,13 @@
 
                     {/* Modals */}
                     
-                    {/* 1. Admin Dashboard Modal */}
-                    <AdminDashboard isOpen={showAdminPanel} onClose={() => setShowAdminPanel(false)} />
+                    {/* Admin Dashboard Modal */}
+                    <AdminDashboard 
+                        isOpen={showAdminPanel} 
+                        onClose={() => setShowAdminPanel(false)} 
+                        appList={appList}
+                        setAppList={setAppList}
+                    />
 
                     <Modal isOpen={showAbout} onClose={() => setShowAbout(false)} title="關於本站">
                         <div className="space-y-6 text-slate-600 dark:text-slate-300">
@@ -1639,7 +1836,6 @@
                                         <p className="text-sm text-slate-500 dark:text-slate-400">
                                             &copy; {new Date().getFullYear()} Created by 其仁藥師.
                                         </p>
-                                        {/* 累積瀏覽人次顯示 */}
                                         {pageViews !== null && (
                                             <div className="text-xs font-bold text-teal-700 dark:text-teal-300 bg-teal-50/80 dark:bg-teal-900/30 px-3 py-1.5 rounded-full flex items-center gap-1.5 border border-teal-100 dark:border-teal-800 shadow-sm animate-[fadeIn_0.5s_ease-out]">
                                                 <User size={14} /> 累積瀏覽人次: {pageViews}
