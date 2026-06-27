@@ -228,10 +228,6 @@
             { id: 'yellow', name: '黃色', class: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400" }
         ];
 
-        const initialAppsData = [
-        ];
-
-
         // ==========================================
         // UI 元件
         // ==========================================
@@ -1054,8 +1050,8 @@
             // ==========================================
             // 工具清單與資料庫串接區 (雲端同步)
             // ==========================================
-            const [appList, setAppList] = useState(initialAppsData);
-            const [isAppsLoading, setIsAppsLoading] = useState(false);
+            const [appList, setAppList] = useState([]);
+            const [isAppsLoading, setIsAppsLoading] = useState(true); // 預設為 true 以顯示載入動畫
 
             useEffect(() => {
                 if (isAuthenticated) {
@@ -1730,7 +1726,12 @@
                         </div>
 
                         {/* App Grid */}
-                        {currentApps.length > 0 ? (
+                        {isAppsLoading ? (
+                            <div className="flex flex-col items-center justify-center py-20 animate-[fadeIn_0.5s_ease-out]">
+                                <Activity size={48} className="animate-spin text-teal-500 mb-4" />
+                                <p className="text-slate-500 dark:text-slate-400 font-medium text-lg">載入工具庫中，請稍候...</p>
+                            </div>
+                        ) : currentApps.length > 0 ? (
                             <>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                     {currentApps.map(app => (
