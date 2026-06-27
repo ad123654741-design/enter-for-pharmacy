@@ -15,7 +15,7 @@
     <!-- 3. 鎖定 Tailwind CSS 版本 -->
     <script src="https://cdn.tailwindcss.com?version=3.4.3"></script>
 
-    <!-- 4. 改用 Chart.js 的 umd 版本，專門為了 script 標籤載入設計，避免 ES Module 衝突 -->
+    <!-- 4. 改用 Chart.js 的 umd 版本 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js"></script>
     
     <!-- Tailwind Config for Dark Mode -->
@@ -32,12 +32,10 @@
         body {
             font-family: 'Noto Sans TC', sans-serif;
             background-color: #f8fafc;
-            /* 醫療科技感的方格背景 */
             background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
             background-size: 24px 24px;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
-        /* 深色模式下的背景調整 */
         .dark body {
             background-color: #0f172a;
             background-image: radial-gradient(#334155 1px, transparent 1px);
@@ -60,14 +58,13 @@
         .card-hover:hover {
             transform: translateY(-4px);
             box-shadow: 0 12px 24px -8px rgba(13, 148, 136, 0.15), 0 4px 8px -4px rgba(0, 0, 0, 0.05);
-            border-color: #99f6e4; /* teal-200 */
+            border-color: #99f6e4;
         }
         .dark .card-hover:hover {
             box-shadow: 0 12px 24px -8px rgba(20, 184, 166, 0.25), 0 4px 8px -4px rgba(0, 0, 0, 0.2);
-            border-color: #0d9488; /* teal-600 */
+            border-color: #0d9488;
         }
         
-        /* 裝飾性光暈 */
         .blob-bg {
             position: absolute;
             top: 0;
@@ -83,29 +80,13 @@
             background: radial-gradient(circle at 50% 0%, rgba(20, 184, 166, 0.1) 0%, transparent 70%);
         }
         
-        /* 自定義滾動條 */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
-        }
-        .dark ::-webkit-scrollbar-track {
-            background: #1e293b; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
-            border-radius: 4px;
-        }
-        .dark ::-webkit-scrollbar-thumb {
-            background: #475569; 
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
-        }
-        .dark ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
@@ -124,9 +105,8 @@
 <body>
     <div id="root"></div>
 
-    <!-- 5. 加上 data-type="module" 解決 AppendChild / Import 錯誤 -->
     <script type="text/babel" data-type="module">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         // ==========================================
         // API 網址設定
@@ -137,169 +117,57 @@
         // 內建圖示元件庫
         // ==========================================
         const IconBase = ({ children, size = 24, className = "" }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                width={size} 
-                height={size} 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className}
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
                 {children}
             </svg>
         );
 
         const Icons = {
-            Search: (props) => (
-                <IconBase {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconBase>
-            ),
-            Pill: (props) => (
-                <IconBase {...props}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></IconBase>
-            ),
-            Stethoscope: (props) => (
-                <IconBase {...props}>
-                    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/>
-                    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/>
-                    <circle cx="20" cy="10" r="2"/>
-                </IconBase>
-            ),
-            Calculator: (props) => (
-                <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconBase>
-            ),
-            BookOpen: (props) => (
-                <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>
-            ),
-            Activity: (props) => (
-                <IconBase {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconBase>
-            ),
-            ExternalLink: (props) => (
-                <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>
-            ),
-            Github: (props) => (
-                <IconBase {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></IconBase>
-            ),
-            Menu: (props) => (
-                <IconBase {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconBase>
-            ),
-            X: (props) => (
-                <IconBase {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>
-            ),
-            FlaskConical: (props) => (
-                <IconBase {...props}><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></IconBase>
-            ),
-            HeartPulse: (props) => (
-                <IconBase {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></IconBase>
-            ),
-            User: (props) => (
-                <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>
-            ),
-            Info: (props) => (
-                <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>
-            ),
-            Book: (props) => (
-                <IconBase {...props}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></IconBase>
-            ),
-            Instagram: (props) => (
-                <IconBase {...props}>
-                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
-                </IconBase>
-            ),
-            Globe: (props) => (
-                <IconBase {...props}>
-                    <circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                </IconBase>
-            ),
-            Link: (props) => (
-                <IconBase {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconBase>
-            ),
-            Lock: (props) => (
-                <IconBase {...props}>
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </IconBase>
-            ),
-            ChevronLeft: (props) => (
-                <IconBase {...props}><polyline points="15 18 9 12 15 6" /></IconBase>
-            ),
-            ChevronRight: (props) => (
-                <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>
-            ),
-            ChevronsLeft: (props) => (
-                <IconBase {...props}><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></IconBase>
-            ),
-            ChevronsRight: (props) => (
-                <IconBase {...props}><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></IconBase>
-            ),
-            ArrowUp: (props) => (
-                <IconBase {...props}><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></IconBase>
-            ),
-            Flame: (props) => (
-                <IconBase {...props}>
-                    <path d="M12 2c0 4 3 6 3 9a3 3 0 0 1-6 0c0-3 3-5 3-9z" />
-                    <path d="M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4" fill="currentColor"/>
-                    <path d="M8.5 8.5C7.5 10 7 12 7 14a5 5 0 0 0 10 0c0-2.5-1.5-4.5-3-6" />
-                </IconBase>
-            ),
-            History: (props) => (
-                <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconBase>
-            ),
-            Sparkles: (props) => (
-                <IconBase {...props}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></IconBase>
-            ),
-            Star: (props) => (
-                <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>
-            ),
-            StarFilled: (props) => (
-                <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/></IconBase>
-            ),
-            Sun: (props) => (
-                <IconBase {...props}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></IconBase>
-            ),
-            Moon: (props) => (
-                <IconBase {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconBase>
-            ),
-            MessageSquare: (props) => (
-                <IconBase {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconBase>
-            ),
-            Send: (props) => (
-                <IconBase {...props}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconBase>
-            ),
-            CheckCircle: (props) => (
-                <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>
-            ),
-            ChevronDown: (props) => (
-                <IconBase {...props}><polyline points="6 9 12 15 18 9"/></IconBase>
-            ),
-            ChevronUp: (props) => (
-                <IconBase {...props}><polyline points="18 15 12 9 6 15"/></IconBase>
-            ),
-            Settings: (props) => (
-                <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>
-            ),
-            BarChart: (props) => (
-                <IconBase {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></IconBase>
-            ),
-            Key: (props) => (
-                <IconBase {...props}><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></IconBase>
-            ),
-            Plus: (props) => (
-                <IconBase {...props}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconBase>
-            ),
-            Trash2: (props) => (
-                <IconBase {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconBase>
-            ),
-            Edit3: (props) => (
-                <IconBase {...props}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></IconBase>
-            )
+            Search: (props) => <IconBase {...props}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></IconBase>,
+            Pill: (props) => <IconBase {...props}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></IconBase>,
+            Calculator: (props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconBase>,
+            BookOpen: (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>,
+            Activity: (props) => <IconBase {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></IconBase>,
+            ExternalLink: (props) => <IconBase {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></IconBase>,
+            Github: (props) => <IconBase {...props}><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></IconBase>,
+            Menu: (props) => <IconBase {...props}><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></IconBase>,
+            X: (props) => <IconBase {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></IconBase>,
+            FlaskConical: (props) => <IconBase {...props}><path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/></IconBase>,
+            HeartPulse: (props) => <IconBase {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></IconBase>,
+            User: (props) => <IconBase {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>,
+            Info: (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>,
+            Link: (props) => <IconBase {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconBase>,
+            Lock: (props) => <IconBase {...props}><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></IconBase>,
+            ChevronLeft: (props) => <IconBase {...props}><polyline points="15 18 9 12 15 6" /></IconBase>,
+            ChevronRight: (props) => <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>,
+            ChevronsLeft: (props) => <IconBase {...props}><polyline points="11 17 6 12 11 7" /><polyline points="18 17 13 12 18 7" /></IconBase>,
+            ChevronsRight: (props) => <IconBase {...props}><polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" /></IconBase>,
+            ArrowUp: (props) => <IconBase {...props}><line x1="12" y1="19" x2="12" y2="5" /><polyline points="5 12 12 5 19 12" /></IconBase>,
+            Flame: (props) => <IconBase {...props}><path d="M12 2c0 4 3 6 3 9a3 3 0 0 1-6 0c0-3 3-5 3-9z" /><path d="M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4" fill="currentColor"/><path d="M8.5 8.5C7.5 10 7 12 7 14a5 5 0 0 0 10 0c0-2.5-1.5-4.5-3-6" /></IconBase>,
+            History: (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></IconBase>,
+            Sparkles: (props) => <IconBase {...props}><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></IconBase>,
+            Star: (props) => <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>,
+            StarFilled: (props) => <IconBase {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor"/></IconBase>,
+            Sun: (props) => <IconBase {...props}><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></IconBase>,
+            Moon: (props) => <IconBase {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconBase>,
+            MessageSquare: (props) => <IconBase {...props}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></IconBase>,
+            Send: (props) => <IconBase {...props}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></IconBase>,
+            CheckCircle: (props) => <IconBase {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></IconBase>,
+            ChevronDown: (props) => <IconBase {...props}><polyline points="6 9 12 15 18 9"/></IconBase>,
+            ChevronUp: (props) => <IconBase {...props}><polyline points="18 15 12 9 6 15"/></IconBase>,
+            Settings: (props) => <IconBase {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></IconBase>,
+            BarChart: (props) => <IconBase {...props}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></IconBase>,
+            Key: (props) => <IconBase {...props}><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></IconBase>,
+            Plus: (props) => <IconBase {...props}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconBase>,
+            Trash2: (props) => <IconBase {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></IconBase>,
+            Edit3: (props) => <IconBase {...props}><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></IconBase>,
+            Filter: (props) => <IconBase {...props}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></IconBase>,
+            SortAsc: (props) => <IconBase {...props}><path d="M11 16h10"/><path d="M11 20h10"/><path d="M11 12h10"/><path d="M11 8h10"/><path d="M3 8l4-4 4 4"/><path d="M7 4v16"/></IconBase>
         };
 
         const { 
-            Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart, Key, Plus, Trash2, Edit3
+            Search, Pill, Calculator, BookOpen, Activity, ExternalLink, Github, Menu, X, 
+            FlaskConical, HeartPulse, User, Info, Link, Lock, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUp, Flame, History, Sparkles, Star, StarFilled, Sun, Moon, MessageSquare, Send, CheckCircle, ChevronDown, ChevronUp, Settings, BarChart, Key, Plus, Trash2, Edit3, Filter, SortAsc
         } = Icons;
 
         // ==========================================
@@ -340,7 +208,6 @@
             'admin': { name: '進階權限', icon: <Key size={18} /> }
         };
 
-        // 色彩設定表 (提供給後台編輯時使用)
         const colorThemes = [
             { id: 'blue', name: '藍色', class: "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400" },
             { id: 'red', name: '紅色', class: "bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400" },
@@ -354,199 +221,111 @@
             { id: 'yellow', name: '黃色', class: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/40 dark:text-yellow-400" }
         ];
 
-        // 預設卡片資料 (當瀏覽器無暫存時載入此份預設)
         const initialAppsData = [
             {
-                id: 1,
-                title: "腎功能計算機",
-                description: "根據年齡體重與腎功能相關指標，快速計算出腎功能估算值。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
-                tags: ["劑量", "腎功能"],
-                aliases: ["kidney", "egfr", "ccr"],
-                color: colorThemes.find(c => c.id === 'blue').class,
-                isPopular: true
+                id: 1, title: "腎功能計算機", description: "根據年齡體重與腎功能相關指標，快速計算出腎功能估算值。",
+                category: "clinical", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
+                tags: ["劑量", "腎功能"], aliases: ["kidney", "egfr", "ccr"], color: colorThemes.find(c => c.id === 'blue').class, isPopular: true
             },
             {
-                id: 2,
-                title: "鴉片類止痛藥物等效劑量轉換器",
-                description: "快速換算各種常見之鴉片類止痛藥物劑量。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%B4%89%E7%89%87%E9%A1%9E%E6%AD%A2%E7%97%9B%E8%97%A5%E7%89%A9%E7%AD%89%E6%95%88%E5%8A%91%E9%87%8F%E8%BD%89%E6%8F%9B%E5%99%A8.html",
-                tags: ["嗎啡", "劑量轉換"],
-                color: colorThemes.find(c => c.id === 'red').class
+                id: 2, title: "鴉片類止痛藥物等效劑量轉換器", description: "快速換算各種常見之鴉片類止痛藥物劑量。",
+                category: "clinical", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%B4%89%E7%89%87%E9%A1%9E%E6%AD%A2%E7%97%9B%E8%97%A5%E7%89%A9%E7%AD%89%E6%95%88%E5%8A%91%E9%87%8F%E8%BD%89%E6%8F%9B%E5%99%A8.html",
+                tags: ["嗎啡", "劑量轉換"], color: colorThemes.find(c => c.id === 'red').class
             },
             {
-                id: 3,
-                title: "帕金森氏症藥物LED計算工具(製作中)",
-                description: "此工具用於計算常用帕金森氏症藥物的 Levodopa Equivalent Dose (LED)。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Parkinson.html.html",
-                tags: ["帕金森氏症", "劑量轉換"],
-                color: colorThemes.find(c => c.id === 'green').class
+                id: 3, title: "帕金森氏症藥物LED計算工具(製作中)", description: "此工具用於計算常用帕金森氏症藥物的 Levodopa Equivalent Dose (LED)。",
+                category: "clinical", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Parkinson.html.html",
+                tags: ["帕金森氏症", "劑量轉換"], color: colorThemes.find(c => c.id === 'green').class
             },
             {
-                id: 4,
-                title: "【TDM】Vancomycin(製作中)",
-                description: "依照臨床個案之生理參數，預測Vancomycin在體內的血中濃度變化。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Vancomycin%20TDM.html",
-                tags: ["藥物血中濃度監測", "萬古黴素"],
-                color: colorThemes.find(c => c.id === 'orange').class
+                id: 4, title: "【TDM】Vancomycin(製作中)", description: "依照臨床個案之生理參數，預測Vancomycin在體內的血中濃度變化。",
+                category: "clinical", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Vancomycin%20TDM.html",
+                tags: ["藥物血中濃度監測", "萬古黴素"], color: colorThemes.find(c => c.id === 'orange').class
             },
             {
-                id: 5,
-                title: "【藥學筆記】外用類固醇(製作中)",
-                description: "依照臨床實證指引，彙整了外用類固醇的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%A4%96%E7%94%A8%E9%A1%9E%E5%9B%BA%E9%86%87.html",
-                tags: ["類固醇強度", "濕疹", "乾癬", "外用藥"],
-                color: colorThemes.find(c => c.id === 'purple').class
+                id: 5, title: "【藥學筆記】外用類固醇(製作中)", description: "依照臨床實證指引，彙整了外用類固醇的相關資訊，方便快速了解藥物之間的差異與注意事項。",
+                category: "information", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%A4%96%E7%94%A8%E9%A1%9E%E5%9B%BA%E9%86%87.html",
+                tags: ["類固醇強度", "濕疹", "乾癬", "外用藥"], color: colorThemes.find(c => c.id === 'purple').class
             },
             {
-                id: 6,
-                title: "【藥學筆記】流感藥物(製作中)",
-                description: "依照臨床實證指引，彙整了流感抗病毒藥物的相關資訊。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%B5%81%E6%84%9F%E6%8A%97%E7%97%85%E6%AF%92%E8%97%A5.html",
-                tags: ["Tamiflu", "Xofluza", "Rapiacta", "公費流感"],
-                color: colorThemes.find(c => c.id === 'green').class
+                id: 6, title: "【藥學筆記】流感藥物(製作中)", description: "依照臨床實證指引，彙整了流感抗病毒藥物的相關資訊。",
+                category: "information", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%B5%81%E6%84%9F%E6%8A%97%E7%97%85%E6%AF%92%E8%97%A5.html",
+                tags: ["Tamiflu", "Xofluza", "Rapiacta", "公費流感"], color: colorThemes.find(c => c.id === 'green').class
             },
             {
-                id: 7,
-                title: "Tailwind CSS 顏色代碼生成器",
-                description: "專為網頁設計初學者打造的互動式工具，讓您能即時預覽並生成 Tailwind CSS 的顏色、邊框與內距代碼。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Tailwind%20CSS%20%E9%A1%8F%E8%89%B2%E4%BB%A3%E7%A2%BC%E7%94%9F%E6%88%90%E5%99%A8.html",
-                tags: ["程式設計", "色彩", "網頁"],
-                color: colorThemes.find(c => c.id === 'teal').class
+                id: 7, title: "Tailwind CSS 顏色代碼生成器", description: "專為網頁設計初學者打造的互動式工具，讓您能即時預覽並生成 Tailwind CSS 的顏色、邊框與內距代碼。",
+                category: "else", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Tailwind%20CSS%20%E9%A1%8F%E8%89%B2%E4%BB%A3%E7%A2%BC%E7%94%9F%E6%88%90%E5%99%A8.html",
+                tags: ["程式設計", "色彩", "網頁"], color: colorThemes.find(c => c.id === 'teal').class
             },
             {
-                id: 8,
-                title: "慢箋領藥日期計算機",
-                description: "快速計算慢箋領藥日，貼心提醒效期。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%85%A2%E7%AE%8B%E9%A0%98%E8%97%A5%E6%99%82%E9%96%93%E8%A8%88%E7%AE%97.html",
-                tags: ["連續處方箋", "慢箋效期", "慢性病"],
-                color: colorThemes.find(c => c.id === 'green').class
+                id: 8, title: "慢箋領藥日期計算機", description: "快速計算慢箋領藥日，貼心提醒效期。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%85%A2%E7%AE%8B%E9%A0%98%E8%97%A5%E6%99%82%E9%96%93%E8%A8%88%E7%AE%97.html",
+                tags: ["連續處方箋", "慢箋效期", "慢性病"], color: colorThemes.find(c => c.id === 'green').class
             },
             {
-                id: 9,
-                title: "TOSHO藥包機教育訓練(製作中)",
-                description: "整合系統設置、硬體操作、耗材更換等文件資料與影音教學內容。",
-                category: "education",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%8C%85%E6%A9%9F%E6%95%99%E5%AD%B8.html",
-                tags: ["住院藥局", "教學", "UD分包機"],
-                color: colorThemes.find(c => c.id === 'red').class
+                id: 9, title: "TOSHO藥包機教育訓練(製作中)", description: "整合系統設置、硬體操作、耗材更換等文件資料與影音教學內容。",
+                category: "education", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%8C%85%E6%A9%9F%E6%95%99%E5%AD%B8.html",
+                tags: ["住院藥局", "教學", "UD分包機"], color: colorThemes.find(c => c.id === 'red').class
             },
             {
-                id: 10,
-                title: "急救車效期提醒系統",
-                description: "以數位化方式紀錄藥品效期。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%80%A5%E6%95%91%E8%BB%8A%E6%95%88%E6%9C%9F%E6%8F%90%E9%86%92%E7%B3%BB%E7%B5%B1.html", 
-                tags: ["過期", "公藥"],
-                color: colorThemes.find(c => c.id === 'rose').class
+                id: 10, title: "急救車效期提醒系統", description: "以數位化方式紀錄藥品效期。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%80%A5%E6%95%91%E8%BB%8A%E6%95%88%E6%9C%9F%E6%8F%90%E9%86%92%E7%B3%BB%E7%B5%B1.html", 
+                tags: ["過期", "公藥"], color: colorThemes.find(c => c.id === 'rose').class
             },
             {
-                id: 11,
-                title: "慢性病房-院外適應借藥計算機",
-                description: "快速計算借藥需包藥天數。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%A6%AE%E5%AD%97%E9%A0%AD%E5%80%9F%E8%97%A5%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
-                tags: ["過年", "榮字頭", "請假", "連假"],
-                color: colorThemes.find(c => c.id === 'blue').class,
-                isNew: true
+                id: 11, title: "慢性病房-院外適應借藥計算機", description: "快速計算借藥需包藥天數。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%A6%AE%E5%AD%97%E9%A0%AD%E5%80%9F%E8%97%A5%E8%A8%88%E7%AE%97%E6%A9%9F.html", 
+                tags: ["過年", "榮字頭", "請假", "連假"], color: colorThemes.find(c => c.id === 'blue').class, isNew: true
             },
             {
-                id: 12,
-                title: "QRcode產生器",
-                description: "快速並客製化QRcode。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/QRcode.html", 
-                tags: ["條碼", "掃描"],
-                color: colorThemes.find(c => c.id === 'rose').class
+                id: 12, title: "QRcode產生器", description: "快速並客製化QRcode。",
+                category: "else", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/QRcode.html", 
+                tags: ["條碼", "掃描"], color: colorThemes.find(c => c.id === 'rose').class
             },
             {
-                id: 13,
-                title: "各平台響應式測試器",
-                description: "測試網頁在各平台實際呈現的狀況。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%90%84%E5%B9%B3%E5%8F%B0%E9%9F%BF%E6%87%89%E5%BC%8F%E6%96%B7%E9%BB%9E%E6%B8%AC%E8%A9%A6%E5%99%A8.html", 
-                tags: ["手機", "平板"],
-                color: colorThemes.find(c => c.id === 'green').class
+                id: 13, title: "各平台響應式測試器", description: "測試網頁在各平台實際呈現的狀況。",
+                category: "else", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%90%84%E5%B9%B3%E5%8F%B0%E9%9F%BF%E6%87%89%E5%BC%8F%E6%96%B7%E9%BB%9E%E6%B8%AC%E8%A9%A6%E5%99%A8.html", 
+                tags: ["手機", "平板"], color: colorThemes.find(c => c.id === 'green').class
             },
             {
-                id: 14,
-                title: "常用字串管理員",
-                description: "方便快速複製常用片語和字彙。",
-                category: "admin",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%AD%97%E4%B8%B2%E5%89%AA%E8%B2%BC%E7%B0%BF.html", 
-                tags: ["剪貼", "複製貼上"],
-                color: colorThemes.find(c => c.id === 'orange').class
+                id: 14, title: "常用字串管理員", description: "方便快速複製常用片語和字彙。",
+                category: "admin", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%AD%97%E4%B8%B2%E5%89%AA%E8%B2%BC%E7%B0%BF.html", 
+                tags: ["剪貼", "複製貼上"], color: colorThemes.find(c => c.id === 'orange').class
             },
             {
-                id: 15,
-                title: "北榮玉里分院抗生素資料庫(製作中)",
-                description: "藥劑科製作整理之臨床資料庫。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%8C%97%E6%A6%AE%E7%8E%89%E9%87%8C%E5%88%86%E9%99%A2%E6%8A%97%E7%94%9F%E7%B4%A0%E8%B3%87%E6%96%99%E5%BA%AB.html", 
-                tags: ["抗菌", "相容性"],
-                color: colorThemes.find(c => c.id === 'red').class
+                id: 15, title: "北榮玉里分院抗生素資料庫(製作中)", description: "藥劑科製作整理之臨床資料庫。",
+                category: "information", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%8C%97%E6%A6%AE%E7%8E%89%E9%87%8C%E5%88%86%E9%99%A2%E6%8A%97%E7%94%9F%E7%B4%A0%E8%B3%87%E6%96%99%E5%BA%AB.html", 
+                tags: ["抗菌", "相容性"], color: colorThemes.find(c => c.id === 'red').class
             },
             {
-                id: 16,
-                title: "印章模擬器",
-                description: "將您上傳的圖像，轉化成不同色彩深淺的印章圖檔。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%87%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
-                tags: ["電子章", "文書處理", "簽名"],
-                color: colorThemes.find(c => c.id === 'teal').class
+                id: 16, title: "印章模擬器", description: "將您上傳的圖像，轉化成不同色彩深淺的印章圖檔。",
+                category: "else", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E6%96%87%E9%9D%92%E7%89%87%E5%8D%B0%E7%AB%A0%E6%A8%A1%E6%93%AC%E5%99%A8.html", 
+                tags: ["電子章", "文書處理", "簽名"], color: colorThemes.find(c => c.id === 'teal').class
             },
             {
-                id: 18,
-                title: "用藥指示多語翻譯機",
-                description: "提供使用者快速翻譯常用頻率途徑與用藥指導內容。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E7%94%A8%E8%97%A5%E6%8C%87%E7%A4%BA%E5%A4%9A%E8%AA%9E%E7%BF%BB%E8%AD%AF%E6%A9%9F.html",
-                tags: ["泰語", "越南語", "衛教", "發藥"],
-                color: colorThemes.find(c => c.id === 'green').class
+                id: 18, title: "用藥指示多語翻譯機", description: "提供使用者快速翻譯常用頻率途徑與用藥指導內容。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E7%94%A8%E8%97%A5%E6%8C%87%E7%A4%BA%E5%A4%9A%E8%AA%9E%E7%BF%BB%E8%AD%AF%E6%A9%9F.html",
+                tags: ["泰語", "越南語", "衛教", "發藥"], color: colorThemes.find(c => c.id === 'green').class
             },
             {
-                id: 19,
-                title: "防災包管理系統",
-                description: "快速記錄防災包與急救包的品項及效期，近效期會發mail通知。",
-                category: "admin",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%98%B2%E7%81%BD%E5%8C%85%E7%AE%A1%E7%90%86%E7%B3%BB%E7%B5%B1.html",
-                tags: ["天災", "效期提醒", "清單", "災難", "防災士"],
-                color: colorThemes.find(c => c.id === 'indigo').class
+                id: 19, title: "防災包管理系統", description: "快速記錄防災包與急救包的品項及效期，近效期會發mail通知。",
+                category: "admin", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E9%98%B2%E7%81%BD%E5%8C%85%E7%AE%A1%E7%90%86%E7%B3%BB%E7%B5%B1.html",
+                tags: ["天災", "效期提醒", "清單", "災難", "防災士"], color: colorThemes.find(c => c.id === 'indigo').class
             },
             {
-                id: 20,
-                title: "圖片轉ico工具",
-                description: "上傳圖片，可自動產生多重解析度的 .ico 檔案。",
-                category: "else",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%9C%96%E7%89%87%E8%BD%89ico%E5%B7%A5%E5%85%B7.html",
-                tags: ["PNG", "縮圖", "捷徑", "圖示"],
-                color: colorThemes.find(c => c.id === 'yellow').class
+                id: 20, title: "圖片轉ico工具", description: "上傳圖片，可自動產生多重解析度的 .ico 檔案。",
+                category: "else", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E5%9C%96%E7%89%87%E8%BD%89ico%E5%B7%A5%E5%85%B7.html",
+                tags: ["PNG", "縮圖", "捷徑", "圖示"], color: colorThemes.find(c => c.id === 'yellow').class
             },
             {
-                id: 21,
-                title: "自備藥辨識輔助系統",
-                description: "快速清理雲端資料或住院醫囑，可用來輔助製作自備藥物清單。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%87%AA%E5%82%99%E8%97%A5%E8%BE%A8%E8%AD%98%E8%BC%94%E5%8A%A9%E7%B3%BB%E7%B5%B1.HTML",
-                tags: ["雲端藥歷", "術前評估", "藥物辨識", "裸錠"],
-                color: colorThemes.find(c => c.id === 'slate').class
+                id: 21, title: "自備藥辨識輔助系統", description: "快速清理雲端資料或住院醫囑，可用來輔助製作自備藥物清單。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%87%AA%E5%82%99%E8%97%A5%E8%BE%A8%E8%AD%98%E8%BC%94%E5%8A%A9%E7%B3%BB%E7%B5%B1.HTML",
+                tags: ["雲端藥歷", "術前評估", "藥物辨識", "裸錠"], color: colorThemes.find(c => c.id === 'slate').class
             },
             {
-                id: 22,
-                title: "藥品庫存區視覺化地圖",
-                description: "以視覺化方式，輸入關鍵字快速找到儲位，並整合標籤列印等管理功能。",
-                category: "sup",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%93%81%E5%BA%AB%E5%AD%98%E5%8D%80%E8%A6%96%E8%A6%BA%E5%8C%96%E5%9C%B0%E5%9C%96.html",
-                tags: [ "藥庫", "藥物管理", "找藥"],
-                color: colorThemes.find(c => c.id === 'slate').class
+                id: 22, title: "藥品庫存區視覺化地圖", description: "以視覺化方式，輸入關鍵字快速找到儲位，並整合標籤列印等管理功能。",
+                category: "sup", url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%97%A5%E5%93%81%E5%BA%AB%E5%AD%98%E5%8D%80%E8%A6%96%E8%A6%BA%E5%8C%96%E5%9C%B0%E5%9C%96.html",
+                tags: [ "藥庫", "藥物管理", "找藥"], color: colorThemes.find(c => c.id === 'slate').class
             }
         ];
 
@@ -701,7 +480,7 @@
             );
         };
 
-        const AppCard = ({ app, onTrackClick, isBookmarked, onToggleBookmark, searchTerms, onTagClick, isAdmin }) => {
+        const AppCard = ({ app, onTrackClick, isBookmarked, onToggleBookmark, searchTerms, onTagClick, isAdmin, dynamicCategories }) => {
             const isLocked = app.category === 'admin' && !isAdmin;
 
             return (
@@ -736,7 +515,7 @@
                                     </span>
                                 )}
                                 <span className="text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700 px-2.5 py-1 rounded-full whitespace-nowrap">
-                                    {categoryMeta[app.category]?.name || '工具'}
+                                    {dynamicCategories.find(c => c.id === app.category)?.name || '工具'}
                                 </span>
                             </div>
                         </div>
@@ -780,50 +559,154 @@
             );
         };
 
-        // 後台管理儀表板 (已加入新增、編輯工具功能)
-        const AdminDashboard = ({ isOpen, onClose, appList, setAppList }) => {
-            const [activeTab, setActiveTab] = useState('manage'); // 'manage' | 'stats'
+        // 後台管理儀表板
+        const AdminDashboard = ({ 
+            isOpen, onClose, appList, setAppList, 
+            changelogs, setChangelogs, upcomingFeatures, setUpcomingFeatures 
+        }) => {
+            const [activeTab, setActiveTab] = useState('manage'); 
             const [stats, setStats] = useState(null);
             const [loading, setLoading] = useState(false);
-            const [isSavingData, setIsSavingData] = useState(false); // 新增：後端儲存狀態
-            const chartRef = React.useRef(null);
-            const chartInstance = React.useRef(null);
+            const [isSavingData, setIsSavingData] = useState(false);
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
 
-            // 工具管理狀態
-            const [editingApp, setEditingApp] = useState(null); // 'new' | app object id
+            const [editingApp, setEditingApp] = useState(null);
             const [formData, setFormData] = useState({});
+            const [adminSearchTerm, setAdminSearchTerm] = useState('');
+            const [adminCategoryFilter, setAdminCategoryFilter] = useState('all');
+            const [adminSortBy, setAdminSortBy] = useState('newest'); 
 
+            const [feedbacks, setFeedbacks] = useState([]);
+            const [isFeedbacksLoading, setIsFeedbacksLoading] = useState(false);
+
+            const [editLogs, setEditLogs] = useState([]);
+            const [editUpcoming, setEditUpcoming] = useState([]);
+
+            useEffect(() => {
+                if (isOpen && activeTab === 'changelog') {
+                    setEditLogs(changelogs.map(log => ({...log, featuresStr: Array.isArray(log.features) ? log.features.join('\n') : log.features})));
+                    setEditUpcoming([...upcomingFeatures]);
+                }
+            }, [isOpen, activeTab, changelogs, upcomingFeatures]);
+
+            // 讀取統計資料
             useEffect(() => {
                 if (isOpen && activeTab === 'stats' && !stats) {
                     setLoading(true);
                     fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_stats`)
                         .then(res => res.json())
-                        .then(data => {
-                            setStats(data);
-                            setLoading(false);
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            setLoading(false);
-                        });
+                        .then(data => { setStats(data); setLoading(false); })
+                        .catch(err => { console.error(err); setLoading(false); });
                 }
             }, [isOpen, activeTab, stats]);
 
-            // 新增：與後端同步資料的函數
+            // 渲染圖表 (已修復：空狀態處理與生命週期)
+            useEffect(() => {
+                let chart = null;
+
+                if (isOpen && activeTab === 'stats' && stats && stats.tools && stats.tools.length > 0 && chartRef.current) {
+                    const ctx = chartRef.current.getContext('2d');
+                    
+                    const toolsData = [...stats.tools];
+                    const sortedTools = toolsData.sort((a, b) => b.clicks - a.clicks).slice(0, 10);
+                    const labels = sortedTools.map(t => t.title);
+                    const chartData = sortedTools.map(t => t.clicks);
+
+                    chart = new window.Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: '工具點擊總次數',
+                                data: chartData,
+                                backgroundColor: 'rgba(20, 184, 166, 0.6)',
+                                borderColor: 'rgba(13, 148, 136, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                hoverBackgroundColor: 'rgba(20, 184, 166, 0.8)'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false 
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        title: (context) => context[0].label
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { 
+                                        precision: 0,
+                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569'
+                                    },
+                                    grid: {
+                                        color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
+                                        callback: function(value) {
+                                            const label = this.getLabelForValue(value) || '';
+                                            return label.length > 6 ? label.substring(0, 6) + '...' : label;
+                                        }
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // Cleanup 銷毀圖表
+                return () => {
+                    if (chart) {
+                        chart.destroy();
+                    }
+                };
+            }, [isOpen, activeTab, stats]);
+
+            useEffect(() => {
+                if (isOpen && activeTab === 'feedback') {
+                    setIsFeedbacksLoading(true);
+                    fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_feedbacks`)
+                        .then(res => res.json())
+                        .then(data => { if (data.status === 'success') setFeedbacks(data.feedbacks || []); setIsFeedbacksLoading(false); })
+                        .catch(err => { console.error(err); setIsFeedbacksLoading(false); });
+                }
+            }, [isOpen, activeTab]);
+
+            const handleMarkFeedbackRead = async (row) => {
+                try {
+                    setFeedbacks(prev => prev.map(f => f.row === row ? { ...f, status: '已讀' } : f));
+                    await fetch(GOOGLE_APP_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'mark_feedback_read', row: row })
+                    });
+                } catch (error) {
+                    console.error('更新狀態失敗', error);
+                }
+            };
+
             const syncToBackend = async (newList, successMessage) => {
                 setIsSavingData(true);
                 try {
                     const response = await fetch(GOOGLE_APP_SCRIPT_URL, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'text/plain;charset=utf-8',
-                        },
-                        body: JSON.stringify({
-                            action: 'save_apps',
-                            apps: newList
-                        })
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'save_apps', apps: newList })
                     });
-                    
                     const result = await response.json();
                     if (result.status === 'success') {
                         setAppList(newList);
@@ -839,7 +722,57 @@
                 }
             };
 
-            // 表單操作處理
+            const syncChangelogsToBackend = async () => {
+                setIsSavingData(true);
+                try {
+                    const formattedLogs = editLogs.map(log => ({
+                        version: log.version,
+                        date: log.date,
+                        features: log.featuresStr ? log.featuresStr.split('\n').filter(s => s.trim()) : []
+                    }));
+                    
+                    const response = await fetch(GOOGLE_APP_SCRIPT_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ 
+                            action: 'save_changelogs_upcoming', 
+                            changelogs: formattedLogs,
+                            upcomingFeatures: editUpcoming.filter(u => u.trim())
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    if (result.status === 'success') {
+                        setChangelogs(formattedLogs);
+                        setUpcomingFeatures(editUpcoming.filter(u => u.trim()));
+                        alert('日誌與預期更新設定已成功儲存！');
+                    } else {
+                        throw new Error(result.message || 'Server error');
+                    }
+                } catch (error) {
+                    console.error('儲存日誌失敗', error);
+                    alert('同步失敗，請確認網路與權限。');
+                } finally {
+                    setIsSavingData(false);
+                }
+            };
+
+            const handleAddLog = () => setEditLogs([{version: 'v1.0.0', date: new Date().toISOString().split('T')[0], featuresStr: ''}, ...editLogs]);
+            const handleUpdateLog = (index, field, value) => {
+                const newLogs = [...editLogs];
+                newLogs[index][field] = value;
+                setEditLogs(newLogs);
+            };
+            const handleRemoveLog = (index) => setEditLogs(editLogs.filter((_, i) => i !== index));
+
+            const handleAddUpcoming = () => setEditUpcoming(['', ...editUpcoming]);
+            const handleUpdateUpcoming = (index, value) => {
+                const newUp = [...editUpcoming];
+                newUp[index] = value;
+                setEditUpcoming(newUp);
+            };
+            const handleRemoveUpcoming = (index) => setEditUpcoming(editUpcoming.filter((_, i) => i !== index));
+
             const handleEdit = (app) => {
                 setFormData({
                     ...app,
@@ -891,22 +824,44 @@
                 }
             };
 
+            const filteredAdminApps = useMemo(() => {
+                let res = appList;
+                if (adminCategoryFilter !== 'all') {
+                    res = res.filter(app => app.category === adminCategoryFilter);
+                }
+                if (adminSearchTerm.trim()) {
+                    const term = adminSearchTerm.toLowerCase();
+                    res = res.filter(app => 
+                        app.title.toLowerCase().includes(term) || 
+                        app.description.toLowerCase().includes(term) ||
+                        (app.tags && app.tags.some(t => t.toLowerCase().includes(term)))
+                    );
+                }
+                res.sort((a, b) => {
+                    if (adminSortBy === 'newest') return b.id - a.id;
+                    if (adminSortBy === 'popular') return (b.isPopular === a.isPopular) ? (b.id - a.id) : (b.isPopular ? 1 : -1);
+                    if (adminSortBy === 'name') return a.title.localeCompare(b.title, 'zh-TW');
+                    return 0;
+                });
+                return res;
+            }, [appList, adminCategoryFilter, adminSearchTerm, adminSortBy]);
+
             if (!isOpen) return null;
 
             return (
                 <Modal isOpen={isOpen} onClose={onClose} title="後台管理面板" maxWidthClass="max-w-4xl">
-                    {/* Tab 切換 */}
-                    <div className="flex gap-2 mb-6 border-b border-slate-200 dark:border-slate-700">
-                        <button 
-                            onClick={() => setActiveTab('manage')} 
-                            className={`px-4 py-2 border-b-2 font-medium transition-colors flex items-center gap-2 ${activeTab === 'manage' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                        >
+                    <div className="flex gap-1 md:gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 overflow-x-auto pb-1">
+                        <button onClick={() => setActiveTab('manage')} className={`px-3 py-2 border-b-2 font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'manage' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
                             <Settings size={18}/> 工具管理
                         </button>
-                        <button 
-                            onClick={() => setActiveTab('stats')} 
-                            className={`px-4 py-2 border-b-2 font-medium transition-colors flex items-center gap-2 ${activeTab === 'stats' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
-                        >
+                        <button onClick={() => setActiveTab('changelog')} className={`px-3 py-2 border-b-2 font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'changelog' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                            <History size={18}/> 日誌管理
+                        </button>
+                        <button onClick={() => setActiveTab('feedback')} className={`px-3 py-2 border-b-2 font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'feedback' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
+                            <MessageSquare size={18}/> 意見回饋 
+                            {feedbacks.some(f => f.status === '未讀') && <span className="w-2 h-2 rounded-full bg-red-500 ml-1 animate-pulse"></span>}
+                        </button>
+                        <button onClick={() => setActiveTab('stats')} className={`px-3 py-2 border-b-2 font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${activeTab === 'stats' ? 'border-teal-500 text-teal-600 dark:text-teal-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}>
                             <BarChart size={18}/> 數據分析
                         </button>
                     </div>
@@ -914,17 +869,53 @@
                     {activeTab === 'manage' && (
                         <div>
                             {editingApp === null ? (
-                                /* 工具列表介面 */
                                 <div className="animate-[fadeIn_0.3s_ease-out]">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <p className="text-slate-500 dark:text-slate-400 text-sm">目前共有 {appList.length} 個工具，修改後將即時反映於前端。</p>
-                                        <button onClick={handleNew} className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-colors">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+                                        <div className="flex flex-1 flex-col sm:flex-row gap-3 w-full">
+                                            <div className="relative flex-1">
+                                                <Search className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={18} />
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="搜尋工具名稱或描述..." 
+                                                    value={adminSearchTerm} 
+                                                    onChange={e => setAdminSearchTerm(e.target.value)}
+                                                    className="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-teal-500 outline-none"
+                                                />
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <div className="relative">
+                                                    <Filter className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                                    <select 
+                                                        value={adminCategoryFilter} 
+                                                        onChange={e => setAdminCategoryFilter(e.target.value)}
+                                                        className="pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-teal-500 outline-none appearance-none"
+                                                    >
+                                                        <option value="all">所有分類</option>
+                                                        {Object.entries(categoryMeta).filter(([k, v]) => k !== 'favorites' && k !== 'all').map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="relative">
+                                                    <SortAsc className="absolute left-3 top-2.5 text-slate-400" size={16} />
+                                                    <select 
+                                                        value={adminSortBy} 
+                                                        onChange={e => setAdminSortBy(e.target.value)}
+                                                        className="pl-9 pr-8 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-teal-500 outline-none appearance-none"
+                                                    >
+                                                        <option value="newest">最新加入</option>
+                                                        <option value="popular">熱門優先</option>
+                                                        <option value="name">標題排序</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button onClick={handleNew} className="shrink-0 bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-colors">
                                             <Plus size={16}/> 新增工具
                                         </button>
                                     </div>
                                     
                                     <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-2">
-                                        {appList.map(app => (
+                                        {filteredAdminApps.length > 0 ? filteredAdminApps.map(app => (
                                             <div key={app.id} className="flex justify-between items-center p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                                 <div>
                                                     <div className="font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -945,11 +936,14 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )) : (
+                                            <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                                找不到符合條件的工具...
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
-                                /* 工具編輯/新增表單 */
                                 <form onSubmit={handleSave} className="animate-[fadeIn_0.3s_ease-out] bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700">
                                     <div className="flex justify-between items-center mb-6 border-b pb-4 dark:border-slate-700">
                                         <h4 className="font-bold text-xl text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -1019,6 +1013,96 @@
                         </div>
                     )}
 
+                    {activeTab === 'changelog' && (
+                        <div className="animate-[fadeIn_0.3s_ease-out]">
+                            <div className="flex justify-between items-center mb-4">
+                                <p className="text-slate-500 dark:text-slate-400 text-sm">維護前端顯示的更新日誌與預期功能清單。</p>
+                                <button onClick={syncChangelogsToBackend} disabled={isSavingData} className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 text-sm shadow-sm transition-colors disabled:opacity-50">
+                                    {isSavingData ? <Activity size={16} className="animate-spin"/> : <CheckCircle size={16}/>} 
+                                    {isSavingData ? '儲存中...' : '儲存變更至雲端'}
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[60vh] overflow-y-auto pr-2">
+                                <div>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h4 className="font-bold text-slate-700 dark:text-slate-200">系統更新日誌</h4>
+                                        <button type="button" onClick={handleAddLog} className="text-teal-600 text-sm font-medium flex items-center gap-1 hover:text-teal-700"><Plus size={14}/>新增</button>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {editLogs.map((log, index) => (
+                                            <div key={index} className="p-4 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50">
+                                                <div className="flex gap-2 mb-2">
+                                                    <input value={log.version} onChange={e => handleUpdateLog(index, 'version', e.target.value)} placeholder="v1.0.0" className="w-1/2 px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+                                                    <input value={log.date} onChange={e => handleUpdateLog(index, 'date', e.target.value)} placeholder="YYYY/MM/DD" className="w-1/2 px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+                                                </div>
+                                                <textarea rows="3" value={log.featuresStr} onChange={e => handleUpdateLog(index, 'featuresStr', e.target.value)} placeholder="更新內容 (多行代表多項)" className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 resize-none mb-2"></textarea>
+                                                <div className="flex justify-end">
+                                                    <button onClick={() => handleRemoveLog(index)} className="text-red-500 hover:text-red-700 text-xs font-medium flex items-center gap-1"><Trash2 size={12}/>移除此筆</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {editLogs.length === 0 && <p className="text-sm text-slate-500">暫無日誌記錄</p>}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div className="flex justify-between items-center mb-3">
+                                        <h4 className="font-bold text-slate-700 dark:text-slate-200">預計更新項目</h4>
+                                        <button type="button" onClick={handleAddUpcoming} className="text-amber-500 text-sm font-medium flex items-center gap-1 hover:text-amber-600"><Plus size={14}/>新增</button>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {editUpcoming.map((item, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <span className="text-amber-500"><Sparkles size={16}/></span>
+                                                <input value={item} onChange={e => handleUpdateUpcoming(index, e.target.value)} placeholder="功能描述..." className="flex-1 px-3 py-1.5 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100" />
+                                                <button onClick={() => handleRemoveUpcoming(index)} className="text-slate-400 hover:text-red-500 p-1"><Trash2 size={16}/></button>
+                                            </div>
+                                        ))}
+                                        {editUpcoming.length === 0 && <p className="text-sm text-slate-500">暫無預計更新項目</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'feedback' && (
+                        <div className="animate-[fadeIn_0.3s_ease-out]">
+                            <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">使用者提交的意見回饋清單 (僅管理員可見)。</p>
+                            
+                            {isFeedbacksLoading ? (
+                                <div className="text-center py-10 text-slate-400 animate-pulse flex flex-col items-center">
+                                    <Activity size={32} className="mb-2 animate-spin" /> 讀取中...
+                                </div>
+                            ) : (
+                                <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                                    {feedbacks.length > 0 ? feedbacks.map((fb, idx) => (
+                                        <div key={idx} className={`p-5 border rounded-xl transition-colors ${fb.status === '未讀' ? 'bg-white dark:bg-slate-800 border-red-200 dark:border-red-900/50 shadow-sm' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 opacity-75'}`}>
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${fb.status === '未讀' ? 'bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400'}`}>
+                                                        {fb.status}
+                                                    </span>
+                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{fb.type}</span>
+                                                    <span className="text-xs text-slate-400">{fb.time}</span>
+                                                </div>
+                                                {fb.status === '未讀' && (
+                                                    <button onClick={() => handleMarkFeedbackRead(fb.row)} className="text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 flex items-center gap-1 border border-teal-200 dark:border-teal-800 px-2 py-1 rounded bg-teal-50 dark:bg-teal-900/30">
+                                                        <CheckCircle size={14}/> 標記已讀
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-slate-600 dark:text-slate-300 text-sm whitespace-pre-wrap mt-2">{fb.desc}</p>
+                                        </div>
+                                    )) : (
+                                        <div className="text-center py-8 text-slate-500 dark:text-slate-400">
+                                            目前沒有任何意見回饋。
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     {activeTab === 'stats' && (
                         <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
                             <div className="grid grid-cols-2 gap-4">
@@ -1032,11 +1116,21 @@
                                 </div>
                             </div>
                             
-                            <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 h-72 relative">
+                            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 h-72 relative flex items-center justify-center overflow-hidden">
                                 {loading ? (
-                                    <div className="absolute inset-0 flex items-center justify-center text-slate-400 animate-pulse">載入大數據中...</div>
+                                    <div className="text-slate-400 animate-pulse flex flex-col items-center">
+                                        <Activity size={32} className="mb-2 animate-spin" /> 載入大數據中...
+                                    </div>
+                                ) : stats && (!stats.tools || stats.tools.length === 0) ? (
+                                    <div className="text-slate-400 flex flex-col items-center animate-[fadeIn_0.5s_ease-out]">
+                                        <BarChart size={48} className="mb-3 opacity-30" />
+                                        <p className="font-medium">目前尚無個別工具的點擊數據</p>
+                                        <p className="text-sm mt-1 opacity-70">當使用者點擊首頁的工具連結後，數據將顯示於此</p>
+                                    </div>
                                 ) : (
-                                    <canvas ref={chartRef}></canvas>
+                                    <div className="absolute inset-0 p-4 pt-6">
+                                        <canvas ref={chartRef}></canvas>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -1062,16 +1156,14 @@
                 const saved = localStorage.getItem('pharma_tools_apps');
                 return saved ? JSON.parse(saved) : initialAppsData;
             });
-            const [isAppsLoading, setIsAppsLoading] = useState(false); // 新增載入狀態
+            const [isAppsLoading, setIsAppsLoading] = useState(false);
 
-            // 當授權成功時，從後端資料庫取得最新卡片資料
             useEffect(() => {
                 if (isAuthenticated) {
                     setIsAppsLoading(true);
                     fetch(`${GOOGLE_APP_SCRIPT_URL}?action=get_apps`)
                         .then(res => res.json())
                         .then(data => {
-                            // 若後端有資料，且不為空，則覆蓋前端資料
                             if (data.status === 'success' && data.apps && data.apps.length > 0) {
                                 setAppList(data.apps);
                                 localStorage.setItem('pharma_tools_apps', JSON.stringify(data.apps));
@@ -1125,7 +1217,8 @@
             const [expandedLogIndex, setExpandedLogIndex] = useState(0); 
             const [hasNewChangelog, setHasNewChangelog] = useState(false); 
 
-            const searchInputRef = React.useRef(null); 
+            const searchInputRef = useRef(null); 
+            const searchRef = useRef(null);
 
             useEffect(() => {
                 if (showChangelog) {
@@ -1148,8 +1241,6 @@
                 if (saved) return saved === 'dark';
                 return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             });
-
-            const searchRef = React.useRef(null);
 
             const handleLoginSuccess = (adminFlag = false) => {
                 setIsAuthenticated(true);
@@ -1336,7 +1427,6 @@
             const searchTerms = debouncedSearchTerm.toLowerCase().split(' ').filter(t => t.trim() !== '');
 
             const filteredApps = appList.filter(app => {
-                // 一般使用者在「全部工具」中不顯示進階權限工具，但切換至進階權限分類時可看見
                 if (!isAdmin && activeCategory === 'all' && app.category === 'admin') return false;
 
                 const matchesSearch = searchTerms.length === 0 || searchTerms.every(term => {
@@ -1491,14 +1581,16 @@
                         )}
                     </header>
 
-                    {/* Modals */}
-                    
                     {/* Admin Dashboard Modal */}
                     <AdminDashboard 
                         isOpen={showAdminPanel} 
                         onClose={() => setShowAdminPanel(false)} 
                         appList={appList}
                         setAppList={setAppList}
+                        changelogs={changelogs}
+                        setChangelogs={setChangelogs}
+                        upcomingFeatures={upcomingFeatures}
+                        setUpcomingFeatures={setUpcomingFeatures}
                     />
 
                     <Modal isOpen={showAbout} onClose={() => setShowAbout(false)} title="關於本站">
@@ -1682,7 +1774,6 @@
                     <div className="pt-32 pb-16 px-4 sm:px-6 lg:px-8 relative">
                         <div className="max-w-4xl mx-auto text-center relative z-10">
                             
-                            {/* 製作者資訊 Pill */}
                             <div className="flex justify-center mb-8 animate-[fadeIn_0.5s_ease-out]">
                                 <div className="inline-flex items-center gap-3 bg-white/80 dark:bg-slate-800/80 backdrop-blur pl-2 pr-4 py-1.5 rounded-full shadow-sm border border-slate-200/60 dark:border-slate-700/60 ring-1 ring-slate-100 dark:ring-slate-800">
                                     <div className="relative">
@@ -1758,6 +1849,7 @@
                                             searchTerms={searchTerms}
                                             onTagClick={handleTagClick}
                                             isAdmin={isAdmin}
+                                            dynamicCategories={dynamicCategories}
                                         />
                                     ))}
                                 </div>
